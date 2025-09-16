@@ -71,10 +71,8 @@ public class ChessPiece {
                 while (currentRow >= 1 && currentRow <= 8 && currentCol >= 1 && currentCol <= 8) {
                     ChessPiece pieceHere = board.getPiece(new ChessPosition(currentRow, currentCol));
 
-                    // is something at next square
-                    ChessPiece pieceAtCurrentSquare = board.getPiece(new ChessPosition(currentRow, currentCol));
 
-                    if (pieceAtCurrentSquare == null){
+                    if (pieceHere == null){
                         //We can move here
                         validMoves.add(new ChessMove(myPosition,  new ChessPosition(currentRow, currentCol), null));
 
@@ -82,16 +80,21 @@ public class ChessPiece {
                         currentRow += rowDirection;
                         currentCol += colDirection;
                     } else {
-                        // There's a piece here - now what?
-                        // TODO: check if friend or enemy
-                        break; // Stop this direction for now
+                        if (piece.getTeamColor() == pieceHere.getTeamColor()) {
+                            // Same team - can't capture, just stop
+                            break;
+                        } else {
+                            // Enemy piece - can capture it
+                            validMoves.add(new ChessMove(myPosition, new ChessPosition(currentRow, currentCol), null));
+                            break; // Stop after capturing
+                        }
 
                     }
                 }
 
 
-                }
-
+            }
+            return validMoves;
 
         }
         return List.of();
