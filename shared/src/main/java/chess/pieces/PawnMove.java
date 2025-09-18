@@ -5,14 +5,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class KingMove {
+public class PawnMove {
 
     public static Collection<ChessMove> getMoves(ChessBoard board, ChessPosition position) {
         ChessPiece piece = board.getPiece(position);
 
         //LIST TO HOLD ALL VALID MOVES INTO IT
         List<ChessMove> validMoves = new ArrayList<>();
-        int[][] directions = {{1,1}, {1,-1}, {-1,1}, {-1,-1}, {1,0}, {-1,0}, {0,1}, {0,-1}};
+        int[][] directions = {{2,1}, {-2,1}, {2,-1}, {-2,-1}, {1,2}, {-1,2}, {1,-2}, {-1,-2}};
         for (int[] direction : directions) {
             int rowDirection = direction[0];
             int colDirection = direction[1];
