@@ -26,12 +26,27 @@ public class PawnMove {
                     validMoves.add(new ChessMove(position, new ChessPosition(newRow, newCol), null));
 
                     //check if can move two
-                    if (pieceHere == null && position.getRow() == 2) {
+                    if (position.getRow() == 2) {
                         int twoSquareRow = position.getRow() + (2 * forwardDirection);
                         ChessPiece pieceTwoSquares = board.getPiece(new ChessPosition(twoSquareRow, newCol));
                         if (pieceTwoSquares == null) {
                             validMoves.add(new ChessMove(position, new ChessPosition(twoSquareRow, newCol), null));
                         }
+                    }
+                }
+            }
+
+            int[][] captureDirections = {{1, -1}, {1, 1}}; // forward-left, forward-right
+            for (int[] captureDir : captureDirections) {
+                int captureRow = position.getRow() + captureDir[0];
+                int captureCol = position.getColumn() + captureDir[1];
+
+                if (captureRow >= 1 && captureRow <= 8 && captureCol >= 1 && captureCol <= 8) {
+                    ChessPiece captureTarget = board.getPiece(new ChessPosition(captureRow, captureCol));
+
+                    if (captureTarget != null && captureTarget.getTeamColor() != piece.getTeamColor()) {
+                        // Enemy piece - can capture!
+                        validMoves.add(new ChessMove(position, new ChessPosition(captureRow, captureCol), null));
                     }
                 }
             }
@@ -61,6 +76,20 @@ public class PawnMove {
                     }
                 }
 
+            }
+            int[][] captureDirections = {{-1, -1}, {-1, 1}}; // forward-left, forward-right
+            for (int[] captureDir : captureDirections) {
+                int captureRow = position.getRow() + captureDir[0];
+                int captureCol = position.getColumn() + captureDir[1];
+
+                if (captureRow >= 1 && captureRow <= 8 && captureCol >= 1 && captureCol <= 8) {
+                    ChessPiece captureTarget = board.getPiece(new ChessPosition(captureRow, captureCol));
+
+                    if (captureTarget != null && captureTarget.getTeamColor() != piece.getTeamColor()) {
+                        // Enemy piece - can capture!
+                        validMoves.add(new ChessMove(position, new ChessPosition(captureRow, captureCol), null));
+                    }
+                }
             }
         }
 

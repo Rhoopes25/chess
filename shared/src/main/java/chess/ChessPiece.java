@@ -73,6 +73,9 @@ public class ChessPiece {
         if  (piece.getPieceType() == PieceType.KNIGHT) {
             return KnightMove.getMoves(board, myPosition);
         }
+        if  (piece.getPieceType() == PieceType.PAWN) {
+            return PawnMove.getMoves(board, myPosition);
+        }
         return List.of();
     }
 }
