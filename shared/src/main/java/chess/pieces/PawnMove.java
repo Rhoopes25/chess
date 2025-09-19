@@ -23,14 +23,29 @@ public class PawnMove {
 
                 if (pieceHere == null) {
                     //Add 1 square move
-                    validMoves.add(new ChessMove(position, new ChessPosition(newRow, newCol), null));
+                    if (newRow == 8 || newRow == 1) {
+                        validMoves.add(new ChessMove(position, new ChessPosition(newRow, newCol), ChessPiece.PieceType.QUEEN));
+                        validMoves.add(new ChessMove(position, new ChessPosition(newRow, newCol), ChessPiece.PieceType.ROOK));
+                        validMoves.add(new ChessMove(position, new ChessPosition(newRow, newCol), ChessPiece.PieceType.BISHOP));
+                        validMoves.add(new ChessMove(position, new ChessPosition(newRow, newCol), ChessPiece.PieceType.KNIGHT));
+                    } else {
+                        validMoves.add(new ChessMove(position, new ChessPosition(newRow, newCol), null));
+                    }
+
 
                     //check if can move two
                     if (position.getRow() == 2) {
                         int twoSquareRow = position.getRow() + (2 * forwardDirection);
                         ChessPiece pieceTwoSquares = board.getPiece(new ChessPosition(twoSquareRow, newCol));
                         if (pieceTwoSquares == null) {
-                            validMoves.add(new ChessMove(position, new ChessPosition(twoSquareRow, newCol), null));
+                            if (twoSquareRow == 8 || twoSquareRow == 1) {
+                                validMoves.add(new ChessMove(position, new ChessPosition(twoSquareRow, newCol), ChessPiece.PieceType.QUEEN));
+                                validMoves.add(new ChessMove(position, new ChessPosition(twoSquareRow, newCol), ChessPiece.PieceType.ROOK));
+                                validMoves.add(new ChessMove(position, new ChessPosition(twoSquareRow, newCol), ChessPiece.PieceType.BISHOP));
+                                validMoves.add(new ChessMove(position, new ChessPosition(twoSquareRow, newCol), ChessPiece.PieceType.KNIGHT));
+                            } else {
+                                validMoves.add(new ChessMove(position, new ChessPosition(twoSquareRow, newCol), null));
+                            }
                         }
                     }
                 }
@@ -46,7 +61,14 @@ public class PawnMove {
 
                     if (captureTarget != null && captureTarget.getTeamColor() != piece.getTeamColor()) {
                         // Enemy piece - can capture!
-                        validMoves.add(new ChessMove(position, new ChessPosition(captureRow, captureCol), null));
+                        if (captureRow == 8 || captureRow == 1) {
+                            validMoves.add(new ChessMove(position, new ChessPosition(captureRow, captureCol), ChessPiece.PieceType.QUEEN));
+                            validMoves.add(new ChessMove(position, new ChessPosition(captureRow, captureCol), ChessPiece.PieceType.ROOK));
+                            validMoves.add(new ChessMove(position, new ChessPosition(captureRow, captureCol), ChessPiece.PieceType.BISHOP));
+                            validMoves.add(new ChessMove(position, new ChessPosition(captureRow, captureCol), ChessPiece.PieceType.KNIGHT));
+                        } else {
+                            validMoves.add(new ChessMove(position, new ChessPosition(captureRow, captureCol), null));
+                        }
                     }
                 }
             }
@@ -64,14 +86,28 @@ public class PawnMove {
 
                 if (pieceHere == null) {
                     //Add 1 square move
-                    validMoves.add(new ChessMove(position, new ChessPosition(newRow, newCol), null));
+                    if (newRow == 8 || newRow == 1) {
+                        validMoves.add(new ChessMove(position, new ChessPosition(newRow, newCol), ChessPiece.PieceType.QUEEN));
+                        validMoves.add(new ChessMove(position, new ChessPosition(newRow, newCol), ChessPiece.PieceType.ROOK));
+                        validMoves.add(new ChessMove(position, new ChessPosition(newRow, newCol), ChessPiece.PieceType.BISHOP));
+                        validMoves.add(new ChessMove(position, new ChessPosition(newRow, newCol), ChessPiece.PieceType.KNIGHT));
+                    } else {
+                        validMoves.add(new ChessMove(position, new ChessPosition(newRow, newCol), null));
+                    }
 
                     //check if can move two
-                    if (pieceHere == null && position.getRow() == 7) {
+                    if (position.getRow() == 7) {
                         int twoSquareRow = position.getRow() + (2 * forwardDirection);
                         ChessPiece pieceTwoSquares = board.getPiece(new ChessPosition(twoSquareRow, newCol));
                         if (pieceTwoSquares == null) {
-                            validMoves.add(new ChessMove(position, new ChessPosition(twoSquareRow, newCol), null));
+                            if (twoSquareRow == 8 || twoSquareRow == 1) {
+                                validMoves.add(new ChessMove(position, new ChessPosition(twoSquareRow, newCol), ChessPiece.PieceType.QUEEN));
+                                validMoves.add(new ChessMove(position, new ChessPosition(twoSquareRow, newCol), ChessPiece.PieceType.ROOK));
+                                validMoves.add(new ChessMove(position, new ChessPosition(twoSquareRow, newCol), ChessPiece.PieceType.BISHOP));
+                                validMoves.add(new ChessMove(position, new ChessPosition(twoSquareRow, newCol), ChessPiece.PieceType.KNIGHT));
+                            } else {
+                                validMoves.add(new ChessMove(position, new ChessPosition(twoSquareRow, newCol), null));
+                            }
                         }
                     }
                 }
@@ -87,7 +123,14 @@ public class PawnMove {
 
                     if (captureTarget != null && captureTarget.getTeamColor() != piece.getTeamColor()) {
                         // Enemy piece - can capture!
-                        validMoves.add(new ChessMove(position, new ChessPosition(captureRow, captureCol), null));
+                        if (captureRow == 8 || captureRow == 1) {
+                            validMoves.add(new ChessMove(position, new ChessPosition(captureRow, captureCol), ChessPiece.PieceType.QUEEN));
+                            validMoves.add(new ChessMove(position, new ChessPosition(captureRow, captureCol), ChessPiece.PieceType.ROOK));
+                            validMoves.add(new ChessMove(position, new ChessPosition(captureRow, captureCol), ChessPiece.PieceType.BISHOP));
+                            validMoves.add(new ChessMove(position, new ChessPosition(captureRow, captureCol), ChessPiece.PieceType.KNIGHT));
+                        } else {
+                            validMoves.add(new ChessMove(position, new ChessPosition(captureRow, captureCol), null));
+                        }
                     }
                 }
             }
