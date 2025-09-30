@@ -69,18 +69,18 @@ public class ChessGame {
      * @param teamColor which team to check for check
      * @return True if the specified team is in check
      */
-    public boolean isInCheck(TeamColor teamColor) {
-        for (int row = 1; row <= 8; row++) {
-            for (int col = 1; col <= 8; col++) {
-                // Check the piece at this position
-                currPiece = board.getPiece(position)
-                if(currPiece != null){
-                    currPiece.getTeamColor() == team color
-                }
-
-            }
-        }
-    }
+//    public boolean isInCheck(TeamColor teamColor) {
+//        for (int row = 1; row <= 8; row++) {
+//            for (int col = 1; col <= 8; col++) {
+//                // Check the piece at this position
+//                currPiece = board.getPiece(position)
+//                if(currPiece != null){
+//                    currPiece.getTeamColor() == team color
+//                }
+//
+//            }
+//        }
+//    }
 
     /**
      * Determines if the given team is in checkmate
