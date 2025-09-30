@@ -69,18 +69,50 @@ public class ChessGame {
      * @param teamColor which team to check for check
      * @return True if the specified team is in check
      */
-//    public boolean isInCheck(TeamColor teamColor) {
-//        for (int row = 1; row <= 8; row++) {
-//            for (int col = 1; col <= 8; col++) {
-//                // Check the piece at this position
-//                currPiece = board.getPiece(position)
-//                if(currPiece != null){
-//                    currPiece.getTeamColor() == team color
-//                }
-//
-//            }
-//        }
-//    }
+    public boolean isInCheck(TeamColor teamColor) {
+        ChessPosition kingPosition = null;  //  where the king is
+        // Find the king
+        for (int row = 1; row <= 8; row++) {
+            for (int col = 1; col <= 8; col++) {
+                ChessPosition position = new ChessPosition(row, col);  // Create position from row/col
+                ChessPiece currPiece = board.getPiece(position);       // Get piece at that spot
+
+                if (currPiece != null) {
+                    if (currPiece.getTeamColor() == teamColor &&      // Same team
+                            currPiece.getPieceType() == ChessPiece.PieceType.KING) {
+                        kingPosition = position;  // Found it! Save the position
+                        break;  // Can stop looking
+                    }
+                }
+            }
+            if (kingPosition != null) break;  // Exit outer loop too if found
+        }
+        // After finding kingPosition...
+
+        // Check if any enemy piece can attack the king
+        for (int row = 1; row <= 8; row++) {
+            for (int col = 1; col <= 8; col++) {
+                ChessPosition position = new ChessPosition(row, col);
+                ChessPiece currPiece = board.getPiece(position);
+
+                if (currPiece != null && currPiece.getTeamColor() != teamColor) {
+                    // This is an enemy piece!
+                    // Get all moves this enemy can make
+                    Collection<ChessMove> enemyMoves = currPiece.pieceMoves(board, position);
+
+                    // Check if any move attacks the king
+                    for (ChessMove move : enemyMoves) {
+                        if (move.getEndPosition().equals(kingPosition)) {
+                            return true;  // King is in check!
+                        }
+                    }
+                }
+            }
+        }
+
+        return false;  // No enemy can reach the king
+
+    }
 
     /**
      * Determines if the given team is in checkmate
