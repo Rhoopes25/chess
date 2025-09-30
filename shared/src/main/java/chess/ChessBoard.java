@@ -72,6 +72,24 @@ public class ChessBoard {
         addPiece(new ChessPosition(8, 8), new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.ROOK));
     }
 
+    public ChessBoard clone() {
+        ChessBoard newBoard = new ChessBoard();
+
+        for (int row = 1; row <= 8; row++) {
+            for (int col = 1; col <= 8; col++) {
+                ChessPosition position = new ChessPosition(row, col);
+                ChessPiece piece = this.getPiece(position);
+
+                if (piece != null) {
+                    // Create a NEW piece with the same color and type
+                    ChessPiece newPiece = new ChessPiece(piece.getTeamColor(), piece.getPieceType());
+                    newBoard.addPiece(position, newPiece);
+                }
+            }
+        }
+
+        return newBoard;
+    }
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) {
