@@ -82,24 +82,23 @@ public class ChessGame {
         }
         return legalMoves;
     }
-    private boolean isInCheckOnBoard(TeamColor teamColor, ChessBoard boardToCheck) {
-        ChessPosition kingPosition = null;  //  where the king is
-        // Find the king
+    private ChessPosition findKing(TeamColor teamColor, ChessBoard boardToCheck) {
         for (int row = 1; row <= 8; row++) {
             for (int col = 1; col <= 8; col++) {
-                ChessPosition position = new ChessPosition(row, col);  // Create position from row/col
-                ChessPiece currPiece = boardToCheck.getPiece(position);       // Get piece at that spot
+                ChessPosition position = new ChessPosition(row, col);
+                ChessPiece piece = boardToCheck.getPiece(position);
 
-                if (currPiece != null) {
-                    if (currPiece.getTeamColor() == teamColor &&      // Same team
-                            currPiece.getPieceType() == ChessPiece.PieceType.KING) {
-                        kingPosition = position;  // Found it! Save the position
-                        break;  // Can stop looking
-                    }
+                if (piece != null &&
+                        piece.getTeamColor() == teamColor &&
+                        piece.getPieceType() == ChessPiece.PieceType.KING) {
+                    return position;
                 }
             }
-            if (kingPosition != null) break;  // Exit outer loop too if found
         }
+        return null;  // King not found (shouldn't happen in valid game)
+    }
+    private boolean isInCheckOnBoard(TeamColor teamColor, ChessBoard boardToCheck) {
+        ChessPosition kingPosition = findKing(teamColor, boardToCheck);//  where the king is
 
         // Check if any enemy piece can attack the king
         for (int row = 1; row <= 8; row++) {
@@ -174,49 +173,8 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        ChessPosition kingPosition = null;  //  where the king is
-        // Find the king
-        for (int row = 1; row <= 8; row++) {
-            for (int col = 1; col <= 8; col++) {
-                ChessPosition position = new ChessPosition(row, col);  // Create position from row/col
-                ChessPiece currPiece = board.getPiece(position);       // Get piece at that spot
-
-                if (currPiece != null) {
-                    if (currPiece.getTeamColor() == teamColor &&      // Same team
-                            currPiece.getPieceType() == ChessPiece.PieceType.KING) {
-                        kingPosition = position;  // Found it! Save the position
-                        break;  // Can stop looking
-                    }
-                }
-            }
-            if (kingPosition != null) break;  // Exit outer loop too if found
-        }
-
-        // Check if any enemy piece can attack the king
-        for (int row = 1; row <= 8; row++) {
-            for (int col = 1; col <= 8; col++) {
-                ChessPosition position = new ChessPosition(row, col);
-                ChessPiece currPiece = board.getPiece(position);
-
-                if (currPiece != null && currPiece.getTeamColor() != teamColor) {
-                    // enemy piece
-                    // Get all moves this enemy can make
-                    Collection<ChessMove> enemyMoves = currPiece.pieceMoves(board, position);
-
-                    // Check if any move attacks the king
-                    for (ChessMove move : enemyMoves) {
-                        if (move.getEndPosition().equals(kingPosition)) {
-                            return true;  // King is in check!
-                        }
-                    }
-                }
-            }
-        }
-
-        return false;  // No enemy can reach the king
-
+        return isInCheckOnBoard(teamColor, this.board);
     }
-
 
     /**
      * Determines if the given team is in checkmate
