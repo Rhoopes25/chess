@@ -182,10 +182,7 @@ public class ChessGame {
      * @param teamColor which team to check for checkmate
      * @return True if the specified team is in checkmate
      */
-    public boolean isInCheckmate(TeamColor teamColor) {
-        if (!isInCheck(teamColor)) {
-            return false;
-        }
+    private boolean hasAnyValidMoves(TeamColor teamColor) {
         for (int row = 1; row <= 8; row++) {
             for (int col = 1; col <= 8; col++) {
                 ChessPosition position = new ChessPosition(row, col);
@@ -193,18 +190,16 @@ public class ChessGame {
 
                 if (piece != null && piece.getTeamColor() == teamColor) {
                     Collection<ChessMove> moves = validMoves(position);
-
-                    // If this piece has ANY valid moves, not checkmate
                     if (moves != null && !moves.isEmpty()) {
-                        return false;
+                        return true;
                     }
                 }
             }
         }
-
-        // checkmate
-        return true;
-
+        return false;
+    }
+    public boolean isInCheckmate(TeamColor teamColor) {
+        return isInCheck(teamColor) && !hasAnyValidMoves(teamColor);
     }
 
     /**
@@ -215,27 +210,7 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        if (isInCheck(teamColor)) {
-            return false;
-        }
-        for (int row = 1; row <= 8; row++) {
-            for (int col = 1; col <= 8; col++) {
-                ChessPosition position = new ChessPosition(row, col);
-                ChessPiece piece = board.getPiece(position);
-
-                if (piece != null && piece.getTeamColor() == teamColor) {
-                    Collection<ChessMove> moves = validMoves(position);
-
-                    // If this piece has ANY valid moves, not stalemate
-                    if (moves != null && !moves.isEmpty()) {
-                        return false;
-                    }
-                }
-            }
-        }
-
-        // stalemate
-        return true;
+        return !isInCheck(teamColor) && !hasAnyValidMoves(teamColor);
     }
 
     /**
@@ -249,7 +224,7 @@ public class ChessGame {
 
     /**
      * Gets the current chessboard
-     *
+     * s
      * @return the chessboard
      */
     public ChessBoard getBoard() {
