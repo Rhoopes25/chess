@@ -1,5 +1,6 @@
 package chess;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 /**
@@ -50,8 +51,80 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        throw new RuntimeException("Not implemented");
+        ChessPiece piece = board.getPiece(startPosition);
+
+        if (piece == null) {
+            return null;
+        }
+        Collection<ChessMove> allMoves = piece.pieceMoves(board, startPosition);
+        Collection<ChessMove> legalMoves = new ArrayList<>();
+
+        for (ChessMove move : allMoves) {
+            ChessBoard clonedBoard = board.clone();
+
+            ChessPiece movingPiece = clonedBoard.getPiece(move.getStartPosition());
+            clonedBoard.addPiece(move.getStartPosition(), null);
+
+            //gets piece and moves it to new spot
+            //pawn promotion
+            if (move.getPromotionPiece() != null) {
+                ChessPiece promotedPiece = new ChessPiece(movingPiece.getTeamColor(), move.getPromotionPiece());
+                clonedBoard.addPiece(move.getEndPosition(), promotedPiece);
+            } else {
+                clonedBoard.addPiece(move.getEndPosition(), movingPiece);
+            }
+            if (!isInCheckOnBoard(piece.getTeamColor(), clonedBoard)) {
+                legalMoves.add(move);
+            }
+
+
+        }
+        return legalMoves;
     }
+    private boolean isInCheckOnBoard(TeamColor teamColor, ChessBoard boardToCheck) {
+        ChessPosition kingPosition = null;  //  where the king is
+        // Find the king
+        for (int row = 1; row <= 8; row++) {
+            for (int col = 1; col <= 8; col++) {
+                ChessPosition position = new ChessPosition(row, col);  // Create position from row/col
+                ChessPiece currPiece = boardToCheck.getPiece(position);       // Get piece at that spot
+
+                if (currPiece != null) {
+                    if (currPiece.getTeamColor() == teamColor &&      // Same team
+                            currPiece.getPieceType() == ChessPiece.PieceType.KING) {
+                        kingPosition = position;  // Found it! Save the position
+                        break;  // Can stop looking
+                    }
+                }
+            }
+            if (kingPosition != null) break;  // Exit outer loop too if found
+        }
+
+        // Check if any enemy piece can attack the king
+        for (int row = 1; row <= 8; row++) {
+            for (int col = 1; col <= 8; col++) {
+                ChessPosition position = new ChessPosition(row, col);
+                ChessPiece currPiece = boardToCheck.getPiece(position);
+
+                if (currPiece != null && currPiece.getTeamColor() != teamColor) {
+                    // enemy piece
+                    // Get all moves this enemy can make
+                    Collection<ChessMove> enemyMoves = currPiece.pieceMoves(boardToCheck, position);
+
+                    // Check if any move attacks the king
+                    for (ChessMove move : enemyMoves) {
+                        if (move.getEndPosition().equals(kingPosition)) {
+                            return true;  // King is in check!
+                        }
+                    }
+                }
+            }
+        }
+
+        return false;  // No enemy can reach the king
+
+    }
+
 
     /**
      * Makes a move in a chess game
@@ -60,7 +133,24 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
-        throw new RuntimeException("Not implemented");
+        ChessPiece piece = board.getPiece(move.getStartPosition());
+
+        if (piece == null) {
+            throw new InvalidMoveException("No piece at start position");
+        }
+        if(piece.getTeamColor() != currentTurn) {
+            throw new InvalidMoveException("Not your turn");
+        }
+
+        Collection<ChessMove> legalMoves = validMoves(move.getStartPosition());
+
+        if (!legalMoves.contains(move)) {
+            throw new InvalidMoveException("Invalid move");
+        }
+        //remove from start position
+        board.addPiece(move.getStartPosition(), null);
+
+
     }
 
     /**
@@ -87,7 +177,6 @@ public class ChessGame {
             }
             if (kingPosition != null) break;  // Exit outer loop too if found
         }
-        // After finding kingPosition...
 
         // Check if any enemy piece can attack the king
         for (int row = 1; row <= 8; row++) {
@@ -96,7 +185,7 @@ public class ChessGame {
                 ChessPiece currPiece = board.getPiece(position);
 
                 if (currPiece != null && currPiece.getTeamColor() != teamColor) {
-                    // This is an enemy piece!
+                    // enemy piece
                     // Get all moves this enemy can make
                     Collection<ChessMove> enemyMoves = currPiece.pieceMoves(board, position);
 
@@ -113,6 +202,7 @@ public class ChessGame {
         return false;  // No enemy can reach the king
 
     }
+
 
     /**
      * Determines if the given team is in checkmate
