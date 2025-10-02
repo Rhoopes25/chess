@@ -149,6 +149,14 @@ public class ChessGame {
         }
         //remove from start position
         board.addPiece(move.getStartPosition(), null);
+        //pawn promotion
+        if (move.getPromotionPiece() != null) {
+            ChessPiece promotedPiece = new ChessPiece(piece.getTeamColor(), move.getPromotionPiece());
+            board.addPiece(move.getEndPosition(), promotedPiece);
+        } else {
+            // Normal move - add the piece to end position
+            board.addPiece(move.getEndPosition(), piece);
+        }
 
 
     }
