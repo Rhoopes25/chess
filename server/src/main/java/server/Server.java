@@ -2,10 +2,7 @@ package server;
 
 import io.javalin.*;
 import dataaccess.*;
-import model.LoginRequest;
-import model.LoginResponse;
-import model.RegisterRequest;
-import model.RegisterResponse;
+import model.*;
 import service.*;
 import io.javalin.http.Context;
 import com.google.gson.Gson;
@@ -35,6 +32,7 @@ public class Server {
         javalin.post("/user", this::handleRegister);
         javalin.post("/session", this::handleLogin);
         javalin.delete("/session", this::handleLogout);
+        javalin.get("/game", this::handleListGames);
 
     }
     private Object handleClear(Context ctx) {
@@ -87,6 +85,17 @@ public class Server {
             userService.logout(authToken);
             ctx.status(200);
             return "{}";
+        } catch (DataAccessException e) {
+            ctx.status(401);
+            return gson.toJson(Map.of("message", "Error: unauthorized"));
+        }
+    }
+    private Object handleListGames(Context ctx) {
+        try {
+            String authToken = ctx.header("authorization");
+            ListGamesResponse response = gameService.listGames(authToken);
+            ctx.status(200);
+            return gson.toJson(response);
         } catch (DataAccessException e) {
             ctx.status(401);
             return gson.toJson(Map.of("message", "Error: unauthorized"));
