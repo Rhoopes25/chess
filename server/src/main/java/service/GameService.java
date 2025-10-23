@@ -17,6 +17,7 @@ public class GameService {
         this.gameDAO = gameDAO;
 
     }
+
     public CreateGameResponse createGame(CreateGameRequest request, String authToken) throws DataAccessException {
         //  authToken is not valid
         if (authDAO.getAuth(authToken) == null) {
@@ -71,14 +72,20 @@ public class GameService {
         if (game == null) {
             throw new DataAccessException("Error: bad request");
         }
+        String color = request.playerColor();
+        // Validate playerColor: must not be null or empty, and must be WHITE or BLACK
+        if (color == null || color.isEmpty()) {
+            // Catches null AND ""
+            throw new DataAccessException("Error: bad request");
+        }
+
+        if (!color.equalsIgnoreCase("WHITE") && !color.equalsIgnoreCase("BLACK")) {
+            // Catches "GREEN" or any other invalid string
+            throw new DataAccessException("Error: bad request");
+        }
 
         // Handle joining as a player (WHITE or BLACK)
         if (request.playerColor() != null) {
-            // Validate color is WHITE or BLACK
-            if (!request.playerColor().equals("WHITE") && !request.playerColor().equals("BLACK")) {
-                throw new DataAccessException("Error: bad request");
-            }
-
             // white spot is already taken
             if (request.playerColor().equals("WHITE")) {
                 if (game.whiteUsername() != null) {
