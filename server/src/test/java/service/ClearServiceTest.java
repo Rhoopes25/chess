@@ -26,23 +26,22 @@ public class ClearServiceTest {
     @Test
     @DisplayName("Clear Service Wipes All Data")
     public void clearSuccess() throws DataAccessException {
-        // 1. Arrange: Add data to all databases
+        // 1. Add data to all databases
         userDAO.createUser(new UserData("user1", "pass1", "email1"));
         authDAO.createAuth(new AuthData("token1", "user1"));
 
-        // (Assuming you have a GameData constructor and a createGame method)
-        // We'll create a game with ID 1
+        // Create a game with ID 1
         GameData testGame = new GameData(1, null, null, "testGame", null);
         gameDAO.createGame(testGame); // <-- Add a game to be cleared
 
 
-        // 2. Act: Run the service method
+        // 2. Run the service method
         clearService.clear();
 
 
-        // 3. Assert: Verify all data is gone
+        // Verify all data is gone
         assertNull(userDAO.getUser("user1"), "User should be cleared");
         assertNull(authDAO.getAuth("token1"), "Auth token should be cleared");
-        assertNull(gameDAO.getGame(1), "Game should be cleared"); // <-- Verify game is gone
+        assertNull(gameDAO.getGame(1), "Game should be cleared"); //  game is gone
     }
 }
