@@ -98,7 +98,7 @@ public class ChessGame {
         return null;  // King not found (shouldn't happen in valid game)
     }
     private boolean isInCheckOnBoard(TeamColor teamColor, ChessBoard boardToCheck) {
-        ChessPosition kingPosition = findKing(teamColor, boardToCheck);//  where the king is
+        ChessPosition kingPosition = findKing(teamColor, boardToCheck);
 
         // Check if any enemy piece can attack the king
         for (int row = 1; row <= 8; row++) {
@@ -106,25 +106,34 @@ public class ChessGame {
                 ChessPosition position = new ChessPosition(row, col);
                 ChessPiece currPiece = boardToCheck.getPiece(position);
 
-                if (currPiece != null && currPiece.getTeamColor() != teamColor) {
-                    // enemy piece
-                    // Get all moves this enemy can make
-                    Collection<ChessMove> enemyMoves = currPiece.pieceMoves(boardToCheck, position);
+                // Skip if not an enemy piece
+                if (currPiece == null || currPiece.getTeamColor() == teamColor) {
+                    continue;
+                }
 
-                    // Check if any move attacks the king
-                    for (ChessMove move : enemyMoves) {
-                        if (move.getEndPosition().equals(kingPosition)) {
-                            return true;  // King is in check!
-                        }
-                    }
+                // Check if this enemy piece can attack the king
+                if (canAttackKing(currPiece, position, kingPosition, boardToCheck)) {
+                    return true;
                 }
             }
         }
 
         return false;  // No enemy can reach the king
-
     }
 
+    // Helper method to check if a piece can attack the king
+    private boolean canAttackKing(ChessPiece enemyPiece, ChessPosition enemyPosition,
+                                  ChessPosition kingPosition, ChessBoard boardToCheck) {
+        Collection<ChessMove> enemyMoves = enemyPiece.pieceMoves(boardToCheck, enemyPosition);
+
+        for (ChessMove move : enemyMoves) {
+            if (move.getEndPosition().equals(kingPosition)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     /**
      * Makes a move in a chess game
