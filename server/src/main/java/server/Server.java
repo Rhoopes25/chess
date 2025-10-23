@@ -35,9 +35,25 @@ public class Server {
         javalin.get("/game", this::handleListGames);
         javalin.post("/game", this::handleCreateGame);
         javalin.put("/game", this::handleJoinGame);
-
-
     }
+
+    // Helper method to handle errors and set appropriate status codes
+    private void handleError(Context ctx, DataAccessException e) {
+        String message = e.getMessage();
+
+        if (message.equals("Error: bad request")) {
+            ctx.status(400);
+        } else if (message.equals("Error: unauthorized")) {
+            ctx.status(401);
+        } else if (message.equals("Error: already taken")) {
+            ctx.status(403);
+        } else {
+            ctx.status(500);
+        }
+
+        ctx.result(gson.toJson(Map.of("message", message)));
+    }
+
     private void handleClear(Context ctx) {
         try {
             clearService.clear();
@@ -46,9 +62,9 @@ public class Server {
         } catch (DataAccessException e) {
             ctx.status(500);
             ctx.result(gson.toJson(Map.of("message", e.getMessage())));
-
         }
     }
+
     private void handleRegister(Context ctx) {
         try {
             RegisterRequest request = gson.fromJson(ctx.body(), RegisterRequest.class);
@@ -56,16 +72,10 @@ public class Server {
             ctx.status(200);
             ctx.result(gson.toJson(response));
         } catch (DataAccessException e) {
-            if (e.getMessage().equals("Error: bad request")) {
-                ctx.status(400);
-            } else if (e.getMessage().equals("Error: already taken")) {
-                ctx.status(403);
-            } else {
-                ctx.status(500);
-            }
-            ctx.result(gson.toJson(Map.of("message", e.getMessage())));  // Use ctx.result()
+            handleError(ctx, e);
         }
     }
+
     private void handleLogin(Context ctx) {
         try {
             LoginRequest request = gson.fromJson(ctx.body(), LoginRequest.class);
@@ -73,15 +83,10 @@ public class Server {
             ctx.status(200);
             ctx.result(gson.toJson(response));
         } catch (DataAccessException e) {
-            if (e.getMessage().equals("Error: bad request")) {
-                ctx.status(400);
-            } else if (e.getMessage().equals("Error: unauthorized")) {
-                ctx.status(401);
-            } else {
-                ctx.status(500);
-            }
-            ctx.result(gson.toJson(Map.of("message", e.getMessage())));        }
+            handleError(ctx, e);
+        }
     }
+
     private void handleLogout(Context ctx) {
         try {
             String authToken = ctx.header("authorization");
@@ -93,6 +98,7 @@ public class Server {
             ctx.result(gson.toJson(Map.of("message", "Error: unauthorized")));
         }
     }
+
     private void handleListGames(Context ctx) {
         try {
             String authToken = ctx.header("authorization");
@@ -104,6 +110,7 @@ public class Server {
             ctx.result(gson.toJson(Map.of("message", "Error: unauthorized")));
         }
     }
+
     private void handleCreateGame(Context ctx) {
         try {
             String authToken = ctx.header("authorization");
@@ -112,16 +119,10 @@ public class Server {
             ctx.status(200);
             ctx.result(gson.toJson(response));
         } catch (DataAccessException e) {
-            if (e.getMessage().equals("Error: bad request")) {
-                ctx.status(400);
-            } else if (e.getMessage().equals("Error: unauthorized")) {
-                ctx.status(401);
-            } else {
-                ctx.status(500);
-            }
-            ctx.result(gson.toJson(Map.of("message", e.getMessage())));
+            handleError(ctx, e);
         }
     }
+
     private void handleJoinGame(Context ctx) {
         try {
             String authToken = ctx.header("authorization");
@@ -130,16 +131,7 @@ public class Server {
             ctx.status(200);
             ctx.result("{}");
         } catch (DataAccessException e) {
-            if (e.getMessage().equals("Error: bad request")) {
-                ctx.status(400);
-            } else if (e.getMessage().equals("Error: unauthorized")) {
-                ctx.status(401);
-            } else if (e.getMessage().equals("Error: already taken")) {
-                ctx.status(403);
-            } else {
-                ctx.status(500);
-            }
-            ctx.result(gson.toJson(Map.of("message", e.getMessage())));
+            handleError(ctx, e);
         }
     }
 
