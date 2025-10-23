@@ -33,6 +33,9 @@ public class Server {
         javalin.post("/session", this::handleLogin);
         javalin.delete("/session", this::handleLogout);
         javalin.get("/game", this::handleListGames);
+        javalin.post("/game", this::handleCreateGame);
+        javalin.put("/game", this::handleJoinGame);
+
 
     }
     private Object handleClear(Context ctx) {
@@ -99,6 +102,44 @@ public class Server {
         } catch (DataAccessException e) {
             ctx.status(401);
             return gson.toJson(Map.of("message", "Error: unauthorized"));
+        }
+    }
+    private Object handleCreateGame(Context ctx) {
+        try {
+            String authToken = ctx.header("authorization");
+            CreateGameRequest request = gson.fromJson(ctx.body(), CreateGameRequest.class);
+            CreateGameResponse response = gameService.createGame(request, authToken);
+            ctx.status(200);
+            return gson.toJson(response);
+        } catch (DataAccessException e) {
+            if (e.getMessage().equals("Error: bad request")) {
+                ctx.status(400);
+            } else if (e.getMessage().equals("Error: unauthorized")) {
+                ctx.status(401);
+            } else {
+                ctx.status(500);
+            }
+            return gson.toJson(Map.of("message", e.getMessage()));
+        }
+    }
+    private Object handleJoinGame(Context ctx) {
+        try {
+            String authToken = ctx.header("authorization");
+            JoinGameRequest request = gson.fromJson(ctx.body(), JoinGameRequest.class);
+            gameService.joinGame(request, authToken);
+            ctx.status(200);
+            return "{}";
+        } catch (DataAccessException e) {
+            if (e.getMessage().equals("Error: bad request")) {
+                ctx.status(400);
+            } else if (e.getMessage().equals("Error: unauthorized")) {
+                ctx.status(401);
+            } else if (e.getMessage().equals("Error: already taken")) {
+                ctx.status(403);
+            } else {
+                ctx.status(500);
+            }
+            return gson.toJson(Map.of("message", e.getMessage()));
         }
     }
 
