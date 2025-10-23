@@ -54,6 +54,50 @@ public class GameService {
     }
 
     public void joinGame(JoinGameRequest request, String authToken) throws DataAccessException {
-        // TODO: implement
+        // Verify authToken is valid and get the username
+        AuthData auth = authDAO.getAuth(authToken);
+        if (auth == null) {
+            throw new DataAccessException("Error: unauthorized");
+        }
+        String username = auth.username();
+
+        // gameID not provided
+        if (request.gameID() == 0) {
+            throw new DataAccessException("Error: bad request");
+        }
+
+        // Get game
+        GameData game = gameDAO.getGame(request.gameID());
+        if (game == null) {
+            throw new DataAccessException("Error: bad request");
+        }
+
+        // Handle joining as a player (WHITE or BLACK)
+        if (request.playerColor() != null) {
+            // Validate color is WHITE or BLACK
+            if (!request.playerColor().equals("WHITE") && !request.playerColor().equals("BLACK")) {
+                throw new DataAccessException("Error: bad request");
+            }
+
+            // white spot is already taken
+            if (request.playerColor().equals("WHITE")) {
+                if (game.whiteUsername() != null) {
+                    throw new DataAccessException("Error: already taken");
+                }
+                // Update game with white player
+                GameData updatedGame = new GameData(game.gameID(), username, game.blackUsername(),
+                        game.gameName(), game.game());
+                gameDAO.updateGame(updatedGame);
+            } else { // BLACK
+                if (game.blackUsername() != null) {
+                    throw new DataAccessException("Error: already taken");
+                }
+                // Update game with black player
+                GameData updatedGame = new GameData(game.gameID(), game.whiteUsername(), username,
+                        game.gameName(), game.game());
+                gameDAO.updateGame(updatedGame);
+            }
+        }
+        // If playerColor is null, user is just observing - no update needed
     }
 }
