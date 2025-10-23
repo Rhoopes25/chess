@@ -64,6 +64,10 @@ public class UserService {
     }
 
     public void logout(String authToken) throws DataAccessException {
+        // Check if authToken exists
+        if (authDAO.getAuth(authToken) == null) {
+            throw new DataAccessException("Error: unauthorized");
+        }
         //removes the authToken from storage, so it's no longer valid.
         authDAO.deleteAuth(authToken);
     }
