@@ -14,6 +14,8 @@ public class Server {
     // converts java objects into JSON
     private final Gson gson = new Gson();
 
+
+
     // DAOs
     private final UserDAO userDAO = new MemoryUserDAO();
     private final AuthDAO authDAO = new MemoryAuthDAO();
