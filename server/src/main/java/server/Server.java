@@ -14,8 +14,6 @@ public class Server {
     // converts java objects into JSON
     private final Gson gson = new Gson();
 
-
-
     // DAOs
     private final UserDAO userDAO = new MemoryUserDAO();
     private final AuthDAO authDAO = new MemoryAuthDAO();
@@ -25,6 +23,7 @@ public class Server {
     private final ClearService clearService;
     private final UserService userService;
     private final GameService gameService;
+
 
 
     // This method will register URL routes with Javalin
@@ -140,6 +139,12 @@ public class Server {
 
     public Server() {
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
+
+        try {
+            DatabaseManager.initializeTables();
+        } catch (DataAccessException e) {
+            throw new RuntimeException("Failed to initialize database", e);
+        }
 
         // Initialize services with DAOs
         clearService = new ClearService(userDAO, authDAO, gameDAO);
