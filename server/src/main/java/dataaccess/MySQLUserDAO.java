@@ -7,6 +7,33 @@ import java.sql.*;
 
 public class MySQLUserDAO implements UserDAO {
 
+    public MySQLUserDAO() {
+        try {
+            DatabaseManager.createDatabase();
+        } catch (DataAccessException e) {
+            throw new RuntimeException("Unable to create database", e);
+        }
+
+        try (var conn = DatabaseManager.getConnection()) {
+            String createTable = """
+            CREATE TABLE IF NOT EXISTS users (
+                username VARCHAR(100) NOT NULL,
+                password VARCHAR(100) NOT NULL,
+                email VARCHAR(100) NOT NULL,
+                PRIMARY KEY (username)
+            )
+            """;
+
+            try (var stmt = conn.prepareStatement(createTable)) {
+                stmt.executeUpdate();
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Unable to create users table", e);
+        } catch (DataAccessException e) {
+            throw new RuntimeException("Unable to connect to database", e);
+        }
+    }
+
     @Override
     public void createUser(UserData user) throws DataAccessException {
         // hash the password
@@ -23,7 +50,7 @@ public class MySQLUserDAO implements UserDAO {
                 stmt.executeUpdate();  // Execute the INSERT
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Error creating user: " + e.getMessage());
+            throw new DataAccessException("Error creating user");
         }
 
     }
@@ -55,7 +82,7 @@ public class MySQLUserDAO implements UserDAO {
                 }
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Error getting user: " + e.getMessage());
+            throw new DataAccessException("Error getting user");
         }
     }
 
@@ -67,6 +94,6 @@ public class MySQLUserDAO implements UserDAO {
                 preparedStatement.executeUpdate();
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Error clearing users: " + e.getMessage());        }
+            throw new DataAccessException("Error clearing users");        }
     }
 }

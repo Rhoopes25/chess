@@ -20,7 +20,7 @@ public class MySQLAuthDAO implements AuthDAO {
                 stmt.executeUpdate();  // Execute the INSERT
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Error creating auth: " + e.getMessage());
+            throw new DataAccessException("Error creating auth");
         }
 
     }
@@ -51,7 +51,7 @@ public class MySQLAuthDAO implements AuthDAO {
                 }
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Error getting auth: " + e.getMessage());
+            throw new DataAccessException("Error getting auth");
         }
     }
 
@@ -64,7 +64,7 @@ public class MySQLAuthDAO implements AuthDAO {
                 stmt.executeUpdate();           // Execute the DELETE
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Error deleting auth: " + e.getMessage());
+            throw new DataAccessException("Error deleting auth");
         }
     }
 
@@ -76,7 +76,7 @@ public class MySQLAuthDAO implements AuthDAO {
             }
 
         } catch (SQLException e) {
-            throw new DataAccessException("Error clearing auth: " + e.getMessage());
+            throw new DataAccessException("Error clearing auth");
         }
 
     }

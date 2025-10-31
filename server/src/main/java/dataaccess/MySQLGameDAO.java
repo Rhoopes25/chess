@@ -34,7 +34,7 @@ public class MySQLGameDAO implements GameDAO {
                 throw new DataAccessException("Failed to get generated gameID");
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Error creating game: " + e.getMessage());
+            throw new DataAccessException("Error creating game");
         }
     }
 
@@ -67,7 +67,7 @@ public class MySQLGameDAO implements GameDAO {
                 }
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Error getting game: " + e.getMessage());
+            throw new DataAccessException("Error getting game");
         }
     }
 
@@ -100,7 +100,7 @@ public class MySQLGameDAO implements GameDAO {
                 return games;
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Error listing games: " + e.getMessage());
+            throw new DataAccessException("Error listing games");
         }
     }
 
@@ -122,7 +122,7 @@ public class MySQLGameDAO implements GameDAO {
 
                 }
         } catch (SQLException e) {
-            throw new DataAccessException("Error creating game: " + e.getMessage());
+            throw new DataAccessException("Error creating game");
         }
     }
 
@@ -134,7 +134,7 @@ public class MySQLGameDAO implements GameDAO {
             }
 
         } catch (SQLException e) {
-            throw new DataAccessException("Error clearing games: " + e.getMessage());
+            throw new DataAccessException("Error clearing games");
         }
     }
 }

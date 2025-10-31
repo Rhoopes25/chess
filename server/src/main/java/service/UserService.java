@@ -7,6 +7,7 @@ import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
 import dataaccess.UserDAO;
 import model.*;
+import org.mindrot.jbcrypt.BCrypt;
 
 public class UserService {
     private final UserDAO userDAO;
@@ -46,20 +47,25 @@ public class UserService {
         if (request.username() == null || request.password() == null) {
             throw new DataAccessException("Error: bad request");
         }
+
         // get user from UserDAO
         UserData user = userDAO.getUser(request.username());
 
-        // does user exist and does password match?
-        if (user == null || !user.password().equals(request.password())) {
+        // Check if user exists first
+        if (user == null) {
             throw new DataAccessException("Error: unauthorized");
         }
-        String authToken = UUID.randomUUID().toString();
 
-        // auth token for user
+        // Now check password
+        if (!BCrypt.checkpw(request.password(), user.password())) {
+            throw new DataAccessException("Error: unauthorized");
+        }
+
+        // Generate auth token
+        String authToken = UUID.randomUUID().toString();
         AuthData authData = new AuthData(authToken, request.username());
         authDAO.createAuth(authData);
 
-        // return username and token
         return new LoginResponse(request.username(), authToken);
     }
 
