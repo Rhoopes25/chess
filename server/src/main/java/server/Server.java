@@ -15,10 +15,9 @@ public class Server {
     private final Gson gson = new Gson();
 
     // DAOs
-    private final UserDAO userDAO = new MemoryUserDAO();
-    private final AuthDAO authDAO = new MemoryAuthDAO();
-    private final GameDAO gameDAO = new MemoryGameDAO();
-
+    private final UserDAO userDAO = new MySQLUserDAO();
+    private final AuthDAO authDAO = new MySQLAuthDAO();
+    private final GameDAO gameDAO = new MySQLGameDAO();
     // Services
     private final ClearService clearService;
     private final UserService userService;
