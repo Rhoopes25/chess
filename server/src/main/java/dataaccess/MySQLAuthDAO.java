@@ -7,6 +7,33 @@ import org.mindrot.jbcrypt.BCrypt;
 import java.sql.*;
 
 public class MySQLAuthDAO implements AuthDAO {
+
+    public MySQLAuthDAO() {
+        try {
+            DatabaseManager.createDatabase();
+        } catch (DataAccessException e) {
+            throw new RuntimeException("Unable to create database", e);
+        }
+
+        try (var conn = DatabaseManager.getConnection()) {
+            String createTable = """
+            CREATE TABLE IF NOT EXISTS auth (
+                authToken VARCHAR(255) NOT NULL,
+                username VARCHAR(100) NOT NULL,
+                PRIMARY KEY (authToken),
+                FOREIGN KEY (username) REFERENCES users(username)
+            )
+            """;
+
+            try (var stmt = conn.prepareStatement(createTable)) {
+                stmt.executeUpdate();
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Unable to create auth table", e);
+        } catch (DataAccessException e) {
+            throw new RuntimeException("Unable to connect to database", e);
+        }
+    }
     @Override
     public void createAuth(AuthData auth) throws DataAccessException {
 

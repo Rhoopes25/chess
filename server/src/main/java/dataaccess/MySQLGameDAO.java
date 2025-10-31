@@ -10,6 +10,35 @@ import java.util.Collection;
 
 public class MySQLGameDAO implements GameDAO {
 
+    public MySQLGameDAO() {
+        try {
+            DatabaseManager.createDatabase();
+        } catch (DataAccessException e) {
+            throw new RuntimeException("Unable to create database", e);
+        }
+
+        try (var conn = DatabaseManager.getConnection()) {
+            String createTable = """
+            CREATE TABLE IF NOT EXISTS games (
+                gameID INT NOT NULL AUTO_INCREMENT,
+                whiteUsername VARCHAR(100),
+                blackUsername VARCHAR(100),
+                gameName VARCHAR(100) NOT NULL,
+                game TEXT NOT NULL,
+                PRIMARY KEY (gameID)
+            )
+            """;
+
+            try (var stmt = conn.prepareStatement(createTable)) {
+                stmt.executeUpdate();
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Unable to create games table", e);
+        } catch (DataAccessException e) {
+            throw new RuntimeException("Unable to connect to database", e);
+        }
+    }
+
     @Override
     public int createGame(GameData game) throws DataAccessException {
         // First, serialize the ChessGame to JSON
