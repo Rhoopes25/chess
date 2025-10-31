@@ -1,6 +1,7 @@
 package dataaccess;
 
 import model.UserData;
+import org.mindrot.jbcrypt.BCrypt; // add bcrypt for hashing
 import java.util.HashMap;
 
 public class MemoryUserDAO implements UserDAO {
@@ -10,9 +11,16 @@ public class MemoryUserDAO implements UserDAO {
     @Override
     public void createUser(UserData user) throws DataAccessException {
         //username is the key because it is unique
-        users.put(user.username(), user);
+        // also: enforce uniqueness and store a BCRYPT HASH (not plaintext)
+        if (users.containsKey(user.username())) {
+            throw new DataAccessException("Error: already taken");
+        }
 
+        // hash the incoming plaintext password before storing
+        String hashed = BCrypt.hashpw(user.password(), BCrypt.gensalt());
 
+        // store a new UserData with the hashed password
+        users.put(user.username(), new UserData(user.username(), hashed, user.email()));
     }
 
     @Override
