@@ -19,16 +19,17 @@ public class UserService {
     }
 
     public RegisterResponse register(RegisterRequest request) throws DataAccessException {
-        if (request.username() == null || request.password() == null || request.email() == null) {
+        // validate - username, password, and email provided?
+        if (request == null || isBlank(request.username()) || isBlank(request.password()) || isBlank(request.email())) {
             throw new DataAccessException("Error: bad request");
         }
-        if(userDAO.getUser(request.username()) != null) {
+        if (userDAO.getUser(request.username()) != null) {
             throw new DataAccessException("Error: already taken");
         }
 
         // create user
         UserData newUser = new UserData(request.username(), request.password(), request.email());
-        userDAO.createUser(newUser);
+        userDAO.createUser(newUser); // DAO hashes before storing
 
         // Generate a new authToken
         String authToken = UUID.randomUUID().toString();
@@ -39,12 +40,11 @@ public class UserService {
 
         // return username and token
         return new RegisterResponse(request.username(), authToken);
-
     }
 
     public LoginResponse login(LoginRequest request) throws DataAccessException {
         // validate - username and password provided?
-        if (request.username() == null || request.password() == null) {
+        if (request == null || isBlank(request.username()) || isBlank(request.password())) {
             throw new DataAccessException("Error: bad request");
         }
 
@@ -57,7 +57,15 @@ public class UserService {
         }
 
         // Now check password
-        if (!BCrypt.checkpw(request.password(), user.password())) {
+        boolean ok;
+        try {
+            // user.password() must be the stored BCRYPT hash from the DB
+            ok = user.password() != null && BCrypt.checkpw(request.password(), user.password());
+        } catch (IllegalArgumentException badSalt) {
+            // Defensive: if the stored value isn't a valid bcrypt hash, treat like bad creds
+            ok = false;
+        }
+        if (!ok) {
             throw new DataAccessException("Error: unauthorized");
         }
 
@@ -71,11 +79,15 @@ public class UserService {
 
     public void logout(String authToken) throws DataAccessException {
         // Check if authToken exists
-        if (authDAO.getAuth(authToken) == null) {
+        if (isBlank(authToken) || authDAO.getAuth(authToken) == null) {
             throw new DataAccessException("Error: unauthorized");
         }
-        //removes the authToken from storage, so it's no longer valid.
+        // removes the authToken from storage, so it's no longer valid.
         authDAO.deleteAuth(authToken);
     }
 
+    // helper
+    private static boolean isBlank(String s) {
+        return s == null || s.isBlank();
+    }
 }
