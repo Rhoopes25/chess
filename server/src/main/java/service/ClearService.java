@@ -1,27 +1,22 @@
 package service;
 
-import dataaccess.AuthDAO;
-import dataaccess.DataAccessException;
-import dataaccess.GameDAO;
-import dataaccess.UserDAO;
+import dataaccess.*;
 
 public class ClearService {
     private final UserDAO userDAO;
     private final AuthDAO authDAO;
     private final GameDAO gameDAO;
 
-    // Constructor to inject the DAOs
     public ClearService(UserDAO userDAO, AuthDAO authDAO, GameDAO gameDAO) {
         this.userDAO = userDAO;
         this.authDAO = authDAO;
         this.gameDAO = gameDAO;
     }
 
-    // Method to clear all data
+    // delete CHILD tables first, then PARENT
     public void clear() throws DataAccessException {
-        // Clear all three DAOs
-        userDAO.clear();
-        authDAO.clear();
-        gameDAO.clear();
+        authDAO.clear();   // references users → must go first
+        gameDAO.clear();   // may reference users → second
+        userDAO.clear();   // parent last
     }
 }

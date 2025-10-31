@@ -78,14 +78,28 @@ public class Server {
 
     private void handleLogin(Context ctx) {
         try {
-            LoginRequest request = gson.fromJson(ctx.body(), LoginRequest.class);
-            LoginResponse response = userService.login(request);
+            var request = gson.fromJson(ctx.body(), LoginRequest.class);
+            if (request == null) { // malformed or empty JSON
+                throw new DataAccessException("Error: bad request");
+            }
+            var response = userService.login(request);
             ctx.status(200);
             ctx.result(gson.toJson(response));
+
+        } catch (IllegalArgumentException e) {
+            // If BCrypt.checkpw sees a non-hash in DB, treat like bad creds
+            handleError(ctx, new DataAccessException("Error: unauthorized"));
+
         } catch (DataAccessException e) {
             handleError(ctx, e);
+
+        } catch (Exception e) {
+            ctx.status(500);
+            ctx.result(gson.toJson(Map.of("message", "Error: description")));
         }
     }
+
+
 
     private void handleLogout(Context ctx) {
         try {
