@@ -66,7 +66,9 @@ public class MySQLUserDAO implements UserDAO {
 
             ps.setString(1, username);
             try (var rs = ps.executeQuery()) {
-                if (!rs.next()) return null; // not found
+                if (!rs.next()) {
+                    return null;
+                } // not found
 
                 // 'password' here is the stored BCRYPT HASH
                 String u = rs.getString("username");
