@@ -1,6 +1,19 @@
 package client;
 
 public class PreloginClient {
+
+    // This holds the result of a command - both a message and possibly an authToken
+    public record CommandResult(String message, String authToken, boolean shouldQuit) {
+        // Constructor for simple messages (no authToken)
+        public CommandResult(String message) {
+            this(message, null, false);
+        }
+
+        // Constructor for quit command
+        public static CommandResult quit() {
+            return new CommandResult("", null, true);
+        }
+    }
     // This will talk to our server
     private final ServerFacade facade;
 
@@ -12,7 +25,7 @@ public class PreloginClient {
 
     }
     // This method takes the user's input and figures out what command they want
-    public String eval(String input) {
+    public CommandResult eval(String input) {
         // Split the input into words
         var tokens = input.split(" ");
 
@@ -26,17 +39,17 @@ public class PreloginClient {
         return switch (command) {
             case "register" -> register(params);
             case "login" -> login(params);
-            case "quit" -> "quit";
-            case "help" -> help();
-            default -> "Unknown command. Type 'help' to see available commands.";
+            case "quit" -> CommandResult.quit();
+            case "help" -> new CommandResult(help());
+            default -> new CommandResult("Unknown command. Type 'help' to see available commands.");
         };
     }
 
     // This method will handle the register command
-    private String register(String[] params) {
+    private CommandResult register(String[] params) {
         // We need: username, password, email (3 things)
         if (params.length != 3) {
-            return "Error: register requires <username> <password> <email>";
+            return new CommandResult("Error: register requires <username> <password> <email>");
         }
 
         // Get the parameters from the array
@@ -50,19 +63,22 @@ public class PreloginClient {
             var result = facade.register(username, password, email);
 
             // If we get here, it worked! Return success message
-            return "Registered successfully as " + result.username() + "!";
-
+            return new CommandResult(
+                    "Registered successfully as " + result.username() + "!",
+                    result.authToken(),
+                    false
+            );
         } catch (Exception e) {
             // If something went wrong, return the error message
-            return "Register failed: " + e.getMessage();
+            return new CommandResult("Register failed: " + e.getMessage());
         }
     }
 
     // This method will handle the login command
-    private String login(String[] params) {
+    private CommandResult login(String[] params) {
         // We need: username, password (2 things)
         if (params.length != 2) {
-            return "Error: login requires <username> <password>";
+            return new CommandResult("Error: login requires <username> <password>");
         }
 
         // Get the parameters from the array
@@ -75,11 +91,14 @@ public class PreloginClient {
             var result = facade.login(username, password);
 
             // If we get here, it worked! Return success message
-            return "Logged in successfully as " + result.username() + "!";
-
+            return new CommandResult(
+                    "Logged in successfully as " + result.username() + "!",
+                    result.authToken(),
+                    false
+            );
         } catch (Exception e) {
             // If something went wrong, return the error message
-            return "Login failed: " + e.getMessage();
+            return new CommandResult("Login failed: " + e.getMessage());
         }
     }
 
