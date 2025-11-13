@@ -60,7 +60,27 @@ public class PreloginClient {
 
     // This method will handle the login command
     private String login(String[] params) {
-        return "Login not implemented yet";
+        // We need: username, password (2 things)
+        if (params.length != 2) {
+            return "Error: login requires <username> <password>";
+        }
+
+        // Get the parameters from the array
+        String username = params[0];
+        String password = params[1];
+
+        // Try to login with the server
+        try {
+            // Call our ServerFacade login method
+            var result = facade.login(username, password);
+
+            // If we get here, it worked! Return success message
+            return "Logged in successfully as " + result.username() + "!";
+
+        } catch (Exception e) {
+            // If something went wrong, return the error message
+            return "Login failed: " + e.getMessage();
+        }
     }
 
     private String help() {
