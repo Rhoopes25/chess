@@ -29,14 +29,16 @@ public class Repl {
             String line = scanner.nextLine();
 
             // Give the input to the preloginClient and get back a result
-            String result = preloginClient.eval(line);
+            var result = preloginClient.eval(line);
 
             // If the result is "quit", stop the loop
-            if (result.equals("quit")) {
+            if (result.shouldQuit()) {
                 running = false;
             } else {
                 // Otherwise, print the result
-                System.out.println(result);
+                if (!result.message().isEmpty()) {
+                    System.out.println(result.message());
+                }
             }
         }
 
