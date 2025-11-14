@@ -45,7 +45,8 @@ public class ServerFacade {
         // Enable output (sending data)
         connection.setDoOutput(true);
 
-        // Convert request object to JSON and send it
+        // Client to Server process
+        // Sending what user just typed to server
         try (OutputStream requestBody = connection.getOutputStream()) {
             var jsonBody = new Gson().toJson(request);
             requestBody.write(jsonBody.getBytes());
@@ -56,6 +57,8 @@ public class ServerFacade {
             // Success! Read the response
             try (InputStream responseBody = connection.getInputStream()) {
                 InputStreamReader reader = new InputStreamReader(responseBody);
+                // This line returns the RegisterResult (which contains authToken)
+                // grabs username and authtoken from phase 4
                 return new Gson().fromJson(reader, RegisterResult.class);
             }
         } else {
@@ -93,6 +96,7 @@ public class ServerFacade {
         connection.setDoOutput(true);
 
         // Send request
+        // What client had typed being sent to server
         try (OutputStream requestBody = connection.getOutputStream()) {
             var jsonBody = new Gson().toJson(request);
             requestBody.write(jsonBody.getBytes());
@@ -102,6 +106,7 @@ public class ServerFacade {
         if (connection.getResponseCode() == 200) {
             try (InputStream responseBody = connection.getInputStream()) {
                 InputStreamReader reader = new InputStreamReader(responseBody);
+                // return username and authtoken
                 return new Gson().fromJson(reader, LoginResult.class);
             }
         } else {
@@ -126,7 +131,7 @@ public class ServerFacade {
 
         // Set headers
         connection.setRequestProperty("Content-Type", "application/json");
-        connection.setRequestProperty("Authorization", authToken);  // <-- NEW! Auth header
+        connection.setRequestProperty("Authorization", authToken);
 
         // Enable output
         connection.setDoOutput(true);
@@ -141,6 +146,7 @@ public class ServerFacade {
         if (connection.getResponseCode() == 200) {
             try (InputStream responseBody = connection.getInputStream()) {
                 InputStreamReader reader = new InputStreamReader(responseBody);
+                // returns game id and game number
                 return new Gson().fromJson(reader, CreateGameResult.class);
             }
         } else {
