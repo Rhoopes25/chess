@@ -54,6 +54,7 @@ public class PostloginClient {
             case "observe" -> observeGame(params);
             case "logout" -> logout();
             case "help" -> new CommandResult(help());
+
             default -> new CommandResult("Unknown command. Type 'help' to see available commands.");
         };
     }
@@ -75,7 +76,7 @@ public class PostloginClient {
             var result = facade.createGame(authToken, gameName);
 
             // If we get here, it worked! Return success message
-            return new CommandResult("Created game '" + gameName + "' with ID " + result.gameID());
+            return new CommandResult("Created game '" + gameName);
 
         } catch (Exception e) {
             // If something went wrong, return the error message
@@ -238,7 +239,7 @@ Available commands:
   join <ID> [WHITE|BLACK] - Join a game as a player
   observe <ID> - Observe a game
   logout - Logout
-  help - Show this help message
+  help - Show this help message               \s
 """;
     }
 }

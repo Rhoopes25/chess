@@ -89,13 +89,13 @@ public class BoardDrawer {
     private static void drawSquare(int row, int col, ChessGame game) {
         // Determine if this square should be pink or black
         // Chess rule: bottom-right square (h1) is light color
-        boolean isPinkSquare = (row + col) % 2 == 0;
+        boolean isBlackSquare = (row + col) % 2 == 0;
 
         // Set the background color
-        if (isPinkSquare) {
-            System.out.print(SET_BG_COLOR_MAGENTA);
-        } else {
+        if (isBlackSquare) {
             System.out.print(SET_BG_COLOR_BLACK);
+        } else {
+            System.out.print(SET_BG_COLOR_MAGENTA);
         }
 
         // Get the piece at this position

@@ -62,15 +62,13 @@ public class ServerFacade {
                 return new Gson().fromJson(reader, RegisterResult.class);
             }
         } else {
-            // Error! Read the error message
-            try (InputStream errorBody = connection.getErrorStream()) {
-                InputStreamReader reader = new InputStreamReader(errorBody);
-                //  exception
-                throw new Exception("Register failed: " + connection.getResponseCode());
+            // Don't show error codes
+            if (connection.getResponseCode() == 403) {
+                throw new Exception("Registration failed - username already taken");
+            } else {
+                throw new Exception("Registration failed");
             }
-
         }
-
     }
 
     // Login
@@ -110,9 +108,14 @@ public class ServerFacade {
                 return new Gson().fromJson(reader, LoginResult.class);
             }
         } else {
-            throw new Exception("Login failed: " + connection.getResponseCode());
+            if (connection.getResponseCode() == 401) {
+                throw new Exception("Login failed - invalid username or password");
+            } else {
+                throw new Exception("Login failed");
+            }
         }
     }
+
     // Create Game
     public record CreateGameRequest(String gameName) {}
     public record CreateGameResult(int gameID) {}
@@ -150,9 +153,14 @@ public class ServerFacade {
                 return new Gson().fromJson(reader, CreateGameResult.class);
             }
         } else {
-            throw new Exception("Create game failed: " + connection.getResponseCode());
+            if (connection.getResponseCode() == 401) {
+                throw new Exception("Unauthorized - please login again");
+            } else {
+                throw new Exception("Failed to create game");
+            }
         }
     }
+
     // List Games
     public record ListGamesResult(GameInfo[] games) {}
     public record GameInfo(int gameID, String whiteUsername, String blackUsername, String gameName) {}
@@ -170,7 +178,7 @@ public class ServerFacade {
         connection.setRequestProperty("Authorization", authToken);
 
         // NO setDoOutput(true) - we're not sending a body
-        // NO request body for GET requests;)
+        // NO request body for GET requests
 
         // Handle response
         if (connection.getResponseCode() == 200) {
@@ -179,9 +187,14 @@ public class ServerFacade {
                 return new Gson().fromJson(reader, ListGamesResult.class);
             }
         } else {
-            throw new Exception("List games failed: " + connection.getResponseCode());
+            if (connection.getResponseCode() == 401) {
+                throw new Exception("Unauthorized - please login again");
+            } else {
+                throw new Exception("Failed to list games");
+            }
         }
     }
+
     // Join Game
     public record JoinGameRequest(String playerColor, int gameID) {}
     public void joinGame(String authToken, String playerColor, int gameID) throws Exception {
@@ -215,9 +228,16 @@ public class ServerFacade {
             // Success! Join game returns empty body (just 200 OK)
             return;
         } else {
-            throw new Exception("Join game failed: " + connection.getResponseCode());
+            if (connection.getResponseCode() == 403) {
+                throw new Exception("Cannot join game - color already taken");
+            } else if (connection.getResponseCode() == 401) {
+                throw new Exception("Unauthorized - please login again");
+            } else {
+                throw new Exception("Failed to join game");
+            }
         }
     }
+
     public void logout(String authToken) throws Exception {
         // Create the URL
         var url = serverUrl + "/session";
@@ -238,9 +258,10 @@ public class ServerFacade {
             // Success! Logout returns empty body
             return;
         } else {
-            throw new Exception("Logout failed: " + connection.getResponseCode());
+            throw new Exception("Logout failed");
         }
     }
+
     public void clear() throws Exception {
         // Create the URL
         var url = serverUrl + "/db";
@@ -259,8 +280,7 @@ public class ServerFacade {
             // Success! Clear returns empty body
             return;
         } else {
-            throw new Exception("Clear failed: " + connection.getResponseCode());
+            throw new Exception("Failed to clear database");
         }
     }
-
 }
