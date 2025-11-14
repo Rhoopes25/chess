@@ -10,7 +10,7 @@ public class Repl {
 
     // Server URL
     private final String serverUrl = "http://localhost:8080";
-
+    // READ EVAL PRINT LOOP
     // Constructor - runs when we create a new Repl
     public Repl() {
         scanner = new Scanner(System.in);
