@@ -1,5 +1,8 @@
 package client;
 
+import chess.ChessGame;
+import ui.BoardDrawer;
+
 public class PostloginClient {
     // This will talk to our server
     private final ServerFacade facade;
@@ -162,6 +165,16 @@ public class PostloginClient {
             facade.joinGame(authToken, color, gameID);
 
             // If we get here, it worked!
+            // Now draw the board!
+            ChessGame game = new ChessGame();  // Create a new game with starting position
+
+            // Draw from the correct perspective based on color
+            if (color.equals("WHITE")) {
+                BoardDrawer.drawWhiteBoard(game);
+            } else {
+                BoardDrawer.drawBlackBoard(game);
+            }
+
             return new CommandResult("Joined game as " + color);
 
         } catch (Exception e) {
@@ -171,7 +184,7 @@ public class PostloginClient {
     }
 
     // Observe a game
-// params[0] = game number
+    // params[0] = game number
     private CommandResult observeGame(String[] params) {
         // Check if the user gave us a game number
         if (params.length != 1) {
@@ -196,21 +209,11 @@ public class PostloginClient {
             return new CommandResult("Error: Invalid game number");
         }
 
-        // Get the actual gameID from the list (convert from 1-based to 0-based)
-        int gameID = lastGamesList[gameNumber - 1].gameID();
+        // For observing, we draw from white's perspective
+        ChessGame game = new ChessGame();  // Create a new game with starting position
+        BoardDrawer.drawWhiteBoard(game);
 
-        // Try to join as observer (no color = observer)
-        try {
-            // Call our ServerFacade joinGame method with null color to observe
-            facade.joinGame(authToken, null, gameID);
-
-            // If we get here, it worked!
-            return new CommandResult("Now observing game");
-
-        } catch (Exception e) {
-            // If something went wrong, return the error message
-            return new CommandResult("Observe game failed: " + e.getMessage());
-        }
+        return new CommandResult("Now observing game " + gameNumber);
     }
 
     // Logout
