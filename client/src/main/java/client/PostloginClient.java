@@ -86,7 +86,6 @@ public class PostloginClient {
     // List all games
     private CommandResult listGames() {
         // Try to get the list of games from the server
-        // Try to get the list of games from the server
         try {
             // Call our ServerFacade listGames method
             var result = facade.listGames(authToken);
@@ -123,33 +122,18 @@ public class PostloginClient {
     }
 
     // Join a game as a player
-    // params[0] = game number, params[1] = color (WHITE or BLACK)
+// params[0] = game number, params[1] = color (WHITE or BLACK)
     private CommandResult joinGame(String[] params) {
         // Check if the user gave us the right number of parameters
         if (params.length != 2) {
             return new CommandResult("Error: join requires <ID> [WHITE|BLACK]");
         }
 
-        // Check if we have a list of games (user must list games first)
-        if (lastGamesList == null) {
-            return new CommandResult("Error: Please list games first");
-        }
-
-        // Try to parse the game number
-        int gameNumber;
-        try {
-            gameNumber = Integer.parseInt(params[0]);
-        } catch (NumberFormatException e) {
+        // Validate and get the gameID
+        Integer gameID = validateAndGetGameID(params[0]);
+        if (gameID == null) {
             return new CommandResult("Error: Invalid game number");
         }
-
-        // Check if the game number is valid (1-based indexing)
-        if (gameNumber < 1 || gameNumber > lastGamesList.length) {
-            return new CommandResult("Error: Invalid game number");
-        }
-
-        // Get the actual gameID from the list (convert from 1-based to 0-based)
-        int gameID = lastGamesList[gameNumber - 1].gameID();
 
         // Get the color and convert to uppercase
         String color = params[1].toUpperCase();
@@ -184,28 +168,16 @@ public class PostloginClient {
     }
 
     // Observe a game
-    // params[0] = game number
+// params[0] = game number
     private CommandResult observeGame(String[] params) {
         // Check if the user gave us a game number
         if (params.length != 1) {
             return new CommandResult("Error: observe requires <ID>");
         }
 
-        // Check if we have a list of games (user must list games first)
-        if (lastGamesList == null) {
-            return new CommandResult("Error: Please list games first");
-        }
-
-        // Try to parse the game number
-        int gameNumber;
-        try {
-            gameNumber = Integer.parseInt(params[0]);
-        } catch (NumberFormatException e) {
-            return new CommandResult("Error: Invalid game number");
-        }
-
-        // Check if the game number is valid (1-based indexing)
-        if (gameNumber < 1 || gameNumber > lastGamesList.length) {
+        // Validate and get the gameID
+        Integer gameID = validateAndGetGameID(params[0]);
+        if (gameID == null) {
             return new CommandResult("Error: Invalid game number");
         }
 
@@ -213,7 +185,31 @@ public class PostloginClient {
         ChessGame game = new ChessGame();  // Create a new game with starting position
         BoardDrawer.drawWhiteBoard(game);
 
-        return new CommandResult("Now observing game " + gameNumber);
+        return new CommandResult("Now observing game " + params[0]);
+    }
+
+    // Helper method to validate game number and return gameID
+    private Integer validateAndGetGameID(String gameNumberStr) {
+        // Check if we have a list of games (user must list games first)
+        if (lastGamesList == null) {
+            return null;
+        }
+
+        // Try to parse the game number
+        int gameNumber;
+        try {
+            gameNumber = Integer.parseInt(gameNumberStr);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+
+        // Check if the game number is valid (1-based indexing)
+        if (gameNumber < 1 || gameNumber > lastGamesList.length) {
+            return null;
+        }
+
+        // Get the actual gameID from the list (convert from 1-based to 0-based)
+        return lastGamesList[gameNumber - 1].gameID();
     }
 
     // Logout
@@ -234,9 +230,6 @@ public class PostloginClient {
     }
 
     // Show help text
-    // Show help text
-    // Show help text
-// Show help text
     private String help() {
         return """
 Available commands:
