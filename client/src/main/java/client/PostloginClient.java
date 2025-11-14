@@ -80,15 +80,18 @@ public class PostloginClient {
     }
 
     // Show help text
+    // Show help text
+    // Show help text
+// Show help text
     private String help() {
         return """
-        Available commands:
-          create <name> - Create a new game
-          list - List all games
-          join <ID> [WHITE|BLACK] - Join a game as a player
-          observe <ID> - Observe a game
-          logout - Logout
-          help - Show this help message
-        """;
+Available commands:
+  create <name> - Create a new game
+  list - List all games
+  join <ID> [WHITE|BLACK] - Join a game as a player
+  observe <ID> - Observe a game
+  logout - Logout
+  help - Show this help message
+""";
     }
 }
