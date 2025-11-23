@@ -37,9 +37,7 @@
                         <configuration>
                             <archive>
                                 <manifest>
-                                    <mainClass>
-                                        Main
-                                    </mainClass>
+                                    <mainClass>Main</mainClass>
                                 </manifest>
                             </archive>
                             <descriptors>
@@ -54,21 +52,30 @@
 
     <dependencies>
         <dependency>
+            <groupId>io.javalin</groupId>
+            <artifactId>javalin</artifactId>
+            <version>5.6.3</version>
+        </dependency>
+
+        <dependency>
             <groupId>edu.byu.cs240</groupId>
             <artifactId>shared</artifactId>
             <version>1.0.0</version>
         </dependency>
+
         <dependency>
             <groupId>edu.byu.cs240</groupId>
             <artifactId>server</artifactId>
             <scope>test</scope>
             <version>1.0.0</version>
         </dependency>
+
         <dependency>
             <groupId>org.glassfish.tyrus.bundles</groupId>
             <artifactId>tyrus-standalone-client</artifactId>
             <version>2.1.4</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
-
 </project>
+
