@@ -3,6 +3,9 @@ package server.websocket;
 import org.eclipse.jetty.websocket.api.Session;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.ArrayList;
+import com.google.gson.Gson;
+import websocket.messages.ServerMessage;
+import java.io.IOException;
 
 public class ConnectionManager {
 
@@ -18,6 +21,21 @@ public class ConnectionManager {
         Connection(String username, Session session) {
             this.username = username;
             this.session = session;
+        }
+    }
+    public void add(Integer gameID, String username, Session session) {
+        var connection = new Connection(username, session);
+        connections.computeIfAbsent(gameID, k -> new ArrayList<>()).add(connection);
+    }
+
+    public void sendToUser(Integer gameID, String username, ServerMessage message) throws IOException {
+        var gameConnections = connections.get(gameID);
+        if (gameConnections != null) {
+            for (var conn : gameConnections) {
+                if (conn.username.equals(username) && conn.session.isOpen()) {
+                    conn.session.getRemote().sendString(new Gson().toJson(message));
+                }
+            }
         }
     }
 }
