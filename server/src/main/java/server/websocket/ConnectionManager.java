@@ -38,4 +38,29 @@ public class ConnectionManager {
             }
         }
     }
+    //  Send to everyone EXCEPT one person
+    public void broadcast(Integer gameID, String excludeUsername, ServerMessage message) throws IOException {
+        var gameConnections = connections.get(gameID);
+        if (gameConnections != null) {
+            var json = new Gson().toJson(message);
+            for (var conn : gameConnections) {
+                if (conn.session.isOpen() && !conn.username.equals(excludeUsername)) {
+                    conn.session.getRemote().sendString(json);
+                }
+            }
+        }
+    }
+
+    // Send to EVERYONE in the game
+    public void broadcastToAll(Integer gameID, ServerMessage message) throws IOException {
+        var gameConnections = connections.get(gameID);
+        if (gameConnections != null) {
+            var json = new Gson().toJson(message);
+            for (var conn : gameConnections) {
+                if (conn.session.isOpen()) {
+                    conn.session.getRemote().sendString(json);
+                }
+            }
+        }
+    }
 }
