@@ -71,7 +71,8 @@ public class WebSocketHandler {
         // Step 1: Verify authToken and get username
         var authData = authDAO.getAuth(authToken);
         if (authData == null) {
-            connections.sendToUser(gameID, "unknown", new ErrorMessage("Error: Invalid auth token"));
+            // Send error directly to this session since they're not in ConnectionManager yet
+            session.getRemote().sendString(new Gson().toJson(new ErrorMessage("Error: Invalid auth token")));
             return;
         }
         String username = authData.username();
@@ -79,7 +80,8 @@ public class WebSocketHandler {
         // Step 2: Get the game from database
         var game = gameDAO.getGame(gameID);
         if (game == null) {
-            connections.sendToUser(gameID, username, new ErrorMessage("Error: Game not found"));
+            // Send error directly to this session
+            session.getRemote().sendString(new Gson().toJson(new ErrorMessage("Error: Game not found")));
             return;
         }
 
@@ -110,7 +112,8 @@ public class WebSocketHandler {
         // Step 1: Verify authToken and get username
         var authData = authDAO.getAuth(command.getAuthToken());
         if (authData == null) {
-            connections.sendToUser(command.getGameID(), "unknown", new ErrorMessage("Error: Invalid auth token"));
+            // Send error directly to session since they might not be in ConnectionManager
+            session.getRemote().sendString(new Gson().toJson(new ErrorMessage("Error: Invalid auth token")));
             return;
         }
         String username = authData.username();
@@ -210,16 +213,22 @@ public class WebSocketHandler {
             return;
         }
 
-        // Step 4: Mark game as over
+        // Step 4: Check if game is already over
         var game = gameData.game();
+        if (game.isGameOver()) {
+            connections.sendToUser(gameID, username, new ErrorMessage("Error: Game is already over"));
+            return;
+        }
+
+        // Step 5: Mark game as over
         game.setGameOver(true);
 
-        // Step 5: Update game in database
+        // Step 6: Update game in database
         var updatedGameData = new GameData(gameID, gameData.whiteUsername(),
                 gameData.blackUsername(), gameData.gameName(), game);
         gameDAO.updateGame(updatedGameData);
 
-        // Step 6: Send NOTIFICATION to everyone that game is over
+        // Step 7: Send NOTIFICATION to everyone that game is over
         connections.broadcastToAll(gameID, new NotificationMessage(username + " resigned. Game over."));
     }
 

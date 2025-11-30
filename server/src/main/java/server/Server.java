@@ -36,37 +36,28 @@ public class Server {
         javalin.post("/game", this::handleCreateGame);
         javalin.put("/game", this::handleJoinGame);
 
-        // WebSocket endpoint
+        // WebSocket endpoint - create ONE shared handler for ALL connections
+        var wsHandler = new server.websocket.WebSocketHandler(authDAO, gameDAO);
+
         javalin.ws("/ws", webSocket -> {
             webSocket.onConnect(ctx -> {
-                var handler = new server.websocket.WebSocketHandler(authDAO, gameDAO);
-                ctx.attribute("handler", handler);
-                handler.onOpen(ctx.session);
+                wsHandler.onOpen(ctx.session);
             });
 
             webSocket.onMessage(ctx -> {
-                var handler = ctx.attribute("handler");
-                if (handler instanceof server.websocket.WebSocketHandler wsHandler) {
-                    try {
-                        wsHandler.onMessage(ctx.session, ctx.message());
-                    } catch (Exception e) {
-                        System.err.println("WebSocket error: " + e.getMessage());
-                    }
+                try {
+                    wsHandler.onMessage(ctx.session, ctx.message());
+                } catch (Exception e) {
+                    System.err.println("WebSocket error: " + e.getMessage());
                 }
             });
 
             webSocket.onClose(ctx -> {
-                var handler = ctx.attribute("handler");
-                if (handler instanceof server.websocket.WebSocketHandler wsHandler) {
-                    wsHandler.onClose(ctx.session, ctx.status(), ctx.reason());
-                }
+                wsHandler.onClose(ctx.session, ctx.status(), ctx.reason());
             });
 
             webSocket.onError(ctx -> {
-                var handler = ctx.attribute("handler");
-                if (handler instanceof server.websocket.WebSocketHandler wsHandler) {
-                    wsHandler.onError(ctx.session, ctx.error());
-                }
+                wsHandler.onError(ctx.session, ctx.error());
             });
         });
     }
