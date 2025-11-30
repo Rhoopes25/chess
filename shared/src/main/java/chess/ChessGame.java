@@ -13,6 +13,8 @@ import java.util.Objects;
 public class ChessGame {
     private ChessBoard board;
     private TeamColor currentTurn;
+    private boolean gameOver = false; // Add this
+
 
     public ChessGame() {
         this.board = new ChessBoard();
@@ -43,6 +45,7 @@ public class ChessGame {
         WHITE,
         BLACK
     }
+
 
     /**
      * Gets a valid moves for a piece at the given location
@@ -134,6 +137,13 @@ public class ChessGame {
 
         return false;
     }
+    public boolean isGameOver() {
+        return gameOver;
+    }
+
+    public void setGameOver(boolean gameOver) {
+        this.gameOver = gameOver;
+    }
 
     /**
      * Makes a move in a chess game
@@ -143,6 +153,10 @@ public class ChessGame {
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
         ChessPiece piece = board.getPiece(move.getStartPosition());
+
+        if (gameOver) {
+            throw new InvalidMoveException("Game is over");
+        }
 
         if (piece == null) {
             throw new InvalidMoveException("No piece at start position");

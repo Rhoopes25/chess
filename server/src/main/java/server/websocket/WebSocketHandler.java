@@ -190,8 +190,37 @@ public class WebSocketHandler {
 
     // Handle RESIGN command - user resigning from a game
     private void handleResign(String authToken, Integer gameID) throws Exception {
-        // TODO: Mark game as over, broadcast notification to all
-        System.out.println("Handle RESIGN for game " + gameID);
+        // Step 1: Verify authToken and get username
+        var authData = authDAO.getAuth(authToken);
+        if (authData == null) {
+            return; // Invalid auth, just ignore
+        }
+        String username = authData.username();
+
+        // Step 2: Get the game from database
+        var gameData = gameDAO.getGame(gameID);
+        if (gameData == null) {
+            connections.sendToUser(gameID, username, new ErrorMessage("Error: Game not found"));
+            return;
+        }
+
+        // Step 3: Verify they're a player (not observer)
+        if (!username.equals(gameData.whiteUsername()) && !username.equals(gameData.blackUsername())) {
+            connections.sendToUser(gameID, username, new ErrorMessage("Error: Observers cannot resign"));
+            return;
+        }
+
+        // Step 4: Mark game as over
+        var game = gameData.game();
+        game.setGameOver(true);
+
+        // Step 5: Update game in database
+        var updatedGameData = new GameData(gameID, gameData.whiteUsername(),
+                gameData.blackUsername(), gameData.gameName(), game);
+        gameDAO.updateGame(updatedGameData);
+
+        // Step 6: Send NOTIFICATION to everyone that game is over
+        connections.broadcastToAll(gameID, new NotificationMessage(username + " resigned. Game over."));
     }
 
     // Check if it's this player's turn
