@@ -35,6 +35,40 @@ public class Server {
         javalin.get("/game", this::handleListGames);
         javalin.post("/game", this::handleCreateGame);
         javalin.put("/game", this::handleJoinGame);
+
+        // WebSocket endpoint
+        javalin.ws("/ws", webSocket -> {
+            webSocket.onConnect(ctx -> {
+                var handler = new server.websocket.WebSocketHandler(authDAO, gameDAO);
+                ctx.attribute("handler", handler);
+                handler.onOpen(ctx.session);
+            });
+
+            webSocket.onMessage(ctx -> {
+                var handler = ctx.attribute("handler");
+                if (handler instanceof server.websocket.WebSocketHandler wsHandler) {
+                    try {
+                        wsHandler.onMessage(ctx.session, ctx.message());
+                    } catch (Exception e) {
+                        System.err.println("WebSocket error: " + e.getMessage());
+                    }
+                }
+            });
+
+            webSocket.onClose(ctx -> {
+                var handler = ctx.attribute("handler");
+                if (handler instanceof server.websocket.WebSocketHandler wsHandler) {
+                    wsHandler.onClose(ctx.session, ctx.status(), ctx.reason());
+                }
+            });
+
+            webSocket.onError(ctx -> {
+                var handler = ctx.attribute("handler");
+                if (handler instanceof server.websocket.WebSocketHandler wsHandler) {
+                    wsHandler.onError(ctx.session, ctx.error());
+                }
+            });
+        });
     }
 
     // Helper method to handle errors and set appropriate status codes
