@@ -1,9 +1,15 @@
 package server.websocket;
 
+import dataaccess.AuthDAO;
+import dataaccess.GameDAO;
+import model.GameData;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.*;
 import com.google.gson.Gson;
 import websocket.commands.UserGameCommand;
+import websocket.messages.ErrorMessage;
+import websocket.messages.LoadGameMessage;
+import websocket.messages.NotificationMessage;
 
 @WebSocket
 public class WebSocketHandler {
@@ -11,6 +17,16 @@ public class WebSocketHandler {
 
     // Manages all active WebSocket connections organized by game
     private final ConnectionManager connections = new ConnectionManager();
+
+    // Data access objects for database operations
+    private final AuthDAO authDAO;
+    private final GameDAO gameDAO;
+
+    // Constructor to inject DAOs
+    public WebSocketHandler(AuthDAO authDAO, GameDAO gameDAO) {
+        this.authDAO = authDAO;
+        this.gameDAO = gameDAO;
+    }
 
     // Called when a client establishes a WebSocket connection
     // We don't add them to a game yet - waiting for their CONNECT command
@@ -48,8 +64,41 @@ public class WebSocketHandler {
     }
     // Handle CONNECT command - user joining a game
     private void handleConnect(String authToken, Integer gameID, Session session) throws Exception {
-        // TODO: Verify authToken, get username, add to connections, send LOAD_GAME, broadcast notification
-        System.out.println("Handle CONNECT for game " + gameID);
+        // Step 1: Verify authToken and get username
+        var authData = authDAO.getAuth(authToken);
+        if (authData == null) {
+            connections.sendToUser(gameID, "unknown", new ErrorMessage("Error: Invalid auth token"));
+            return;
+        }
+        String username = authData.username();
+
+        // Step 2: Get the game from database
+        var game = gameDAO.getGame(gameID);
+        if (game == null) {
+            connections.sendToUser(gameID, username, new ErrorMessage("Error: Game not found"));
+            return;
+        }
+
+        // Step 3: Add this connection to the ConnectionManager
+        connections.add(gameID, username, session);
+
+        // Step 4: Send LOAD_GAME to this user so they can see the board
+        connections.sendToUser(gameID, username, new LoadGameMessage(game.game()));
+
+        // Step 5: Send NOTIFICATION to everyone else that this user joined
+        String role = determineRole(game, username);
+        connections.broadcast(gameID, username, new NotificationMessage(username + " joined as " + role));
+    }
+
+    // Determine if user is playing WHITE, BLACK, or is an OBSERVER
+    private String determineRole(model.GameData game, String username) {
+        if (username.equals(game.whiteUsername())) {
+            return "WHITE";
+        } else if (username.equals(game.blackUsername())) {
+            return "BLACK";
+        } else {
+            return "OBSERVER";
+        }
     }
 
     // Handle MAKE_MOVE command - user making a move
