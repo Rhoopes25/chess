@@ -28,6 +28,17 @@ public class ConnectionManager {
         connections.computeIfAbsent(gameID, k -> new ArrayList<>()).add(connection);
     }
 
+    // Remove a connection from a game
+    public void remove(Integer gameID, String username) {
+        var gameConnections = connections.get(gameID);
+        if (gameConnections != null) {
+            gameConnections.removeIf(conn -> conn.username.equals(username));
+            if (gameConnections.isEmpty()) {
+                connections.remove(gameID);
+            }
+        }
+    }
+
     public void sendToUser(Integer gameID, String username, ServerMessage message) throws IOException {
         var gameConnections = connections.get(gameID);
         if (gameConnections != null) {

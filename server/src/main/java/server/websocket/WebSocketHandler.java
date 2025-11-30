@@ -153,8 +153,39 @@ public class WebSocketHandler {
     }
     // Handle LEAVE command - user leaving a game
     private void handleLeave(String authToken, Integer gameID) throws Exception {
-        // TODO: Remove from game, remove from connections, broadcast notification
-        System.out.println("Handle LEAVE for game " + gameID);
+        // Step 1: Verify authToken and get username
+        var authData = authDAO.getAuth(authToken);
+        if (authData == null) {
+            return; // Invalid auth, just ignore
+        }
+        String username = authData.username();
+
+        // Step 2: Get the game from database
+        var gameData = gameDAO.getGame(gameID);
+        if (gameData != null) {
+            // Step 3: If they're a player, remove them from the game
+            String newWhite = gameData.whiteUsername();
+            String newBlack = gameData.blackUsername();
+
+            if (username.equals(gameData.whiteUsername())) {
+                newWhite = null; // Remove white player
+            } else if (username.equals(gameData.blackUsername())) {
+                newBlack = null; // Remove black player
+            }
+
+            // Update game in database (only if a player left)
+            if (!username.equals(gameData.whiteUsername()) || !username.equals(gameData.blackUsername())) {
+                var updatedGameData = new GameData(gameID, newWhite, newBlack,
+                        gameData.gameName(), gameData.game());
+                gameDAO.updateGame(updatedGameData);
+            }
+        }
+
+        // Step 4: Remove from ConnectionManager
+        connections.remove(gameID, username);
+
+        // Step 5: Send NOTIFICATION to everyone else
+        connections.broadcast(gameID, username, new NotificationMessage(username + " left the game"));
     }
 
     // Handle RESIGN command - user resigning from a game
