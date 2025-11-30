@@ -13,9 +13,11 @@ public class PostloginClient {
     // Store the last list of games so we can map game numbers to gameIDs
     private ServerFacade.GameInfo[] lastGamesList = null;
 
+    private final String serverUrl;
 
     // Constructor - takes the authToken from login/register
     public PostloginClient(String serverUrl, String authToken) {
+        this.serverUrl = serverUrl;
         this.facade = new ServerFacade(serverUrl);
         this.authToken = authToken;
     }
@@ -125,45 +127,33 @@ public class PostloginClient {
     // Join a game as a player
 // params[0] = game number, params[1] = color (WHITE or BLACK)
     private CommandResult joinGame(String[] params) {
-        // Check if the user gave us the right number of parameters
         if (params.length != 2) {
             return new CommandResult("Error: join requires <ID> [WHITE|BLACK]");
         }
 
-        // Validate and get the gameID
         Integer gameID = validateAndGetGameID(params[0]);
         if (gameID == null) {
             return new CommandResult("Error: Invalid game number");
         }
 
-        // Get the color and convert to uppercase
         String color = params[1].toUpperCase();
-
-        // Validate the color
         if (!color.equals("WHITE") && !color.equals("BLACK")) {
             return new CommandResult("Error: Color must be WHITE or BLACK");
         }
 
-        // Try to join the game with the server
         try {
-            // Call our ServerFacade joinGame method
+            // Call HTTP endpoint to join
             facade.joinGame(authToken, color, gameID);
 
-            // If we get here, it worked!
-            // Now draw the board!
-            ChessGame game = new ChessGame();  // Create a new game with starting position
+            // Enter gameplay mode
+            ChessGame.TeamColor teamColor = color.equals("WHITE") ?
+                    ChessGame.TeamColor.WHITE : ChessGame.TeamColor.BLACK;
 
-            // Draw from the correct perspective based on color
-            if (color.equals("WHITE")) {
-                BoardDrawer.drawWhiteBoard(game);
-            } else {
-                BoardDrawer.drawBlackBoard(game);
-            }
+            enterGameplayMode(gameID, teamColor);
 
-            return new CommandResult("Joined game as " + color);
+            return new CommandResult("Left game.");
 
         } catch (Exception e) {
-            // If something went wrong, return the error message
             return new CommandResult("Join game failed: " + e.getMessage());
         }
     }
@@ -171,22 +161,41 @@ public class PostloginClient {
     // Observe a game
 // params[0] = game number
     private CommandResult observeGame(String[] params) {
-        // Check if the user gave us a game number
         if (params.length != 1) {
             return new CommandResult("Error: observe requires <ID>");
         }
 
-        // Validate and get the gameID
         Integer gameID = validateAndGetGameID(params[0]);
         if (gameID == null) {
             return new CommandResult("Error: Invalid game number");
         }
 
-        // For observing, we draw from white's perspective
-        ChessGame game = new ChessGame();  // Create a new game with starting position
-        BoardDrawer.drawWhiteBoard(game);
+        try {
+            // Enter gameplay mode as observer (null color)
+            enterGameplayMode(gameID, null);
+            return new CommandResult("Left game.");
 
-        return new CommandResult("Now observing game " + params[0]);
+        } catch (Exception e) {
+            return new CommandResult("Observe failed: " + e.getMessage());
+        }
+    }
+
+    private void enterGameplayMode(int gameID, ChessGame.TeamColor playerColor) throws Exception {
+        GameplayClient gameplay = new GameplayClient(serverUrl, authToken, gameID, playerColor);
+
+        // Gameplay loop
+        java.util.Scanner scanner = new java.util.Scanner(System.in);
+        while (true) {
+            System.out.print("\n[GAMEPLAY] >>> ");
+            String line = scanner.nextLine();
+
+            String result = gameplay.eval(line);
+            System.out.println(result);
+
+            if (result.equals("LEFT")) {
+                break; // Exit gameplay mode
+            }
+        }
     }
 
     // Helper method to validate game number and return gameID
