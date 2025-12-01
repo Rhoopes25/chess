@@ -42,7 +42,10 @@ public class GameplayClient implements NotificationHandler {
 
     private void handleLoadGame(LoadGameMessage message) {
         this.currentGame = message.getGame();
+        System.out.println(); // Blank line before board
         redrawBoard();
+        System.out.print("[GAMEPLAY] >>> "); // Reprint prompt
+        System.out.flush();
     }
 
     private void handleError(ErrorMessage message) {
@@ -50,7 +53,9 @@ public class GameplayClient implements NotificationHandler {
     }
 
     private void handleNotification(NotificationMessage message) {
-        System.out.println(message.getMessage());
+        System.out.println("\n" + message.getMessage()); // Newline before notification
+        System.out.print("[GAMEPLAY] >>> "); // Reprint prompt
+        System.out.flush();
     }
 
     private void redrawBoard() {

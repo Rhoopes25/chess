@@ -183,6 +183,9 @@ public class PostloginClient {
     private void enterGameplayMode(int gameID, ChessGame.TeamColor playerColor) throws Exception {
         GameplayClient gameplay = new GameplayClient(serverUrl, authToken, gameID, playerColor);
 
+        // Give WebSocket time to connect and receive LOAD_GAME
+        Thread.sleep(500);
+
         // Gameplay loop
         java.util.Scanner scanner = new java.util.Scanner(System.in);
         while (true) {

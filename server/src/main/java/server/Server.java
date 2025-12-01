@@ -39,12 +39,13 @@ public class Server {
         // WebSocket endpoint - create ONE shared handler for ALL connections
         var wsHandler = new server.websocket.WebSocketHandler(authDAO, gameDAO);
 
-        javalin.ws("/ws", webSocket -> {
-            webSocket.onConnect(ctx -> {
+        javalin.ws("/ws", ws -> {
+            ws.onConnect(ctx -> {
+                ctx.enableAutomaticPings();  // THIS IS THE KEY LINE!
                 wsHandler.onOpen(ctx.session);
             });
 
-            webSocket.onMessage(ctx -> {
+            ws.onMessage(ctx -> {
                 try {
                     wsHandler.onMessage(ctx.session, ctx.message());
                 } catch (Exception e) {
@@ -52,11 +53,11 @@ public class Server {
                 }
             });
 
-            webSocket.onClose(ctx -> {
+            ws.onClose(ctx -> {
                 wsHandler.onClose(ctx.session, ctx.status(), ctx.reason());
             });
 
-            webSocket.onError(ctx -> {
+            ws.onError(ctx -> {
                 wsHandler.onError(ctx.session, ctx.error());
             });
         });
@@ -199,7 +200,13 @@ public class Server {
 
 
     public Server() {
-        javalin = Javalin.create(config -> config.staticFiles.add("web"));
+        javalin = Javalin.create(config -> {
+            config.staticFiles.add("web");
+            // Configure WebSocket timeout
+            config.jetty.modifyServletContextHandler(handler -> {
+                handler.getServer().setStopTimeout(0);
+            });
+        });
 
         try {
             DatabaseManager.initializeTables();

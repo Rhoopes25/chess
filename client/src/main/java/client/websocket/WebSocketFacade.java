@@ -4,6 +4,9 @@ import chess.ChessMove;
 import com.google.gson.Gson;
 import websocket.commands.*;
 import websocket.messages.ServerMessage;
+import websocket.messages.LoadGameMessage;
+import websocket.messages.ErrorMessage;
+import websocket.messages.NotificationMessage;
 
 import jakarta.websocket.*;
 import java.io.IOException;
@@ -34,8 +37,22 @@ public class WebSocketFacade extends Endpoint {
 
     // Handle incoming messages from server
     private void handleMessage(String message) {
-        ServerMessage serverMessage = new Gson().fromJson(message, ServerMessage.class);
-        notificationHandler.notify(serverMessage);
+        try {
+            var gson = new Gson();
+            // First parse to get the type
+            ServerMessage baseMessage = gson.fromJson(message, ServerMessage.class);
+
+            // Then parse again based on the specific type to get the full data
+            ServerMessage fullMessage = switch (baseMessage.getServerMessageType()) {
+                case LOAD_GAME -> gson.fromJson(message, websocket.messages.LoadGameMessage.class);
+                case ERROR -> gson.fromJson(message, websocket.messages.ErrorMessage.class);
+                case NOTIFICATION -> gson.fromJson(message, websocket.messages.NotificationMessage.class);
+            };
+
+            notificationHandler.notify(fullMessage);
+        } catch (Exception e) {
+            System.err.println("Error handling message: " + e.getMessage());
+        }
     }
 
     // Send CONNECT command to join a game
