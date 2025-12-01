@@ -152,7 +152,9 @@ Available commands:
 
     // Helper: Parse "e2" -> ChessPosition(2, 5)
     private ChessPosition parsePosition(String pos) {
-        if (pos.length() != 2) return null;
+        if (pos.length() != 2) {
+            return null;
+        }
 
         char col = pos.charAt(0);
         char row = pos.charAt(1);
