@@ -183,30 +183,39 @@ public class PostloginClient {
     private void enterGameplayMode(int gameID, ChessGame.TeamColor playerColor) throws Exception {
         GameplayClient gameplay = new GameplayClient(serverUrl, authToken, gameID, playerColor);
 
-        // Give WebSocket time to connect and receive LOAD_GAME
+        // Give WebSocket time to connect and receive the initial LOAD_GAME,
+        // which will draw the board and print the first [GAMEPLAY] >>> prompt.
         Thread.sleep(500);
 
-        // Gameplay loop
         java.util.Scanner scanner = new java.util.Scanner(System.in);
+
         while (true) {
-            System.out.print("[GAMEPLAY] >>> ");
+            // Don't print the prompt here for server-driven commands.
+            // The prompt should already be on the screen from GameplayClient.
             String line = scanner.nextLine();
 
             String result = gameplay.eval(line);
             if (!result.isEmpty() && !result.equals("LEFT")) {
-                System.out.println(result); // Print result
+                System.out.println(result); // e.g. "Move sent.", help text, etc.
             }
 
             if (result.equals("LEFT")) {
                 break; // Exit gameplay mode
             }
 
-            // Wait a moment for server response before showing next prompt
-            if (line.startsWith("move") || line.startsWith("resign")) {
-                Thread.sleep(200); // Give server time to respond
+            // Figure out the command word (first token)
+            String trimmed = line.trim();
+            String cmd = trimmed.isEmpty() ? "" : trimmed.split("\\s+")[0];
+
+            // For LOCAL-ONLY commands (no server message), we must print the prompt ourselves
+            if (cmd.equals("help") || cmd.equals("redraw") || cmd.equals("highlight")) {
+                System.out.print("[GAMEPLAY] >>> ");
             }
+            // For move/resign/etc, the prompt will come from GameplayClient handlers
         }
     }
+
+
 
     // Helper method to validate game number and return gameID
     private Integer validateAndGetGameID(String gameNumberStr) {

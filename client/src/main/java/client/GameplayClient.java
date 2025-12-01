@@ -42,17 +42,20 @@ public class GameplayClient implements NotificationHandler {
 
     private void handleLoadGame(LoadGameMessage message) {
         this.currentGame = message.getGame();
-        System.out.println();
+        System.out.println();          // optional blank line before board
         redrawBoard();
+        System.out.print("[GAMEPLAY] >>> ");   // print prompt AFTER board
     }
+
     private void handleError(ErrorMessage message) {
         System.out.println("Error: " + message.getErrorMessage());
+        System.out.print("[GAMEPLAY] >>> ");   // prompt after error
     }
 
     private void handleNotification(NotificationMessage message) {
-        System.out.println(message.getMessage()); // Just the message
+        System.out.println(message.getMessage());
+        System.out.print("[GAMEPLAY] >>> ");   // prompt after notification
     }
-
 
     private void redrawBoard() {
         if (playerColor == ChessGame.TeamColor.BLACK) {
@@ -120,9 +123,7 @@ Available commands:
     }
 
     private String resign() throws Exception {
-        // Confirm resignation
-        System.out.print("Are you sure you want to resign? (yes/no): ");
-        // For now, just resign - you can add confirmation later
+        // Just resign for now; you can add a real confirmation in PostloginClient later
         ws.resign(authToken, gameID);
         return "Resigned from game.";
     }
@@ -142,8 +143,6 @@ Available commands:
             return "No legal moves for that piece.";
         }
 
-        // Draw board with highlights - we'll need to update BoardDrawer for this
-        // For now, just list the moves
         StringBuilder result = new StringBuilder("Legal moves: ");
         for (var move : validMoves) {
             result.append(positionToString(move.getEndPosition())).append(" ");
@@ -175,4 +174,5 @@ Available commands:
         char col = (char) ('a' + pos.getColumn() - 1);
         char row = (char) ('0' + pos.getRow());
         return "" + col + row;
-    }}
+    }
+}
