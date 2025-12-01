@@ -189,14 +189,21 @@ public class PostloginClient {
         // Gameplay loop
         java.util.Scanner scanner = new java.util.Scanner(System.in);
         while (true) {
-            System.out.print("\n[GAMEPLAY] >>> ");
+            System.out.print("[GAMEPLAY] >>> ");
             String line = scanner.nextLine();
 
             String result = gameplay.eval(line);
-            System.out.println(result);
+            if (!result.isEmpty() && !result.equals("LEFT")) {
+                System.out.println(result); // Print result
+            }
 
             if (result.equals("LEFT")) {
                 break; // Exit gameplay mode
+            }
+
+            // Wait a moment for server response before showing next prompt
+            if (line.startsWith("move") || line.startsWith("resign")) {
+                Thread.sleep(200); // Give server time to respond
             }
         }
     }

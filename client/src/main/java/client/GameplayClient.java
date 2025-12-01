@@ -42,21 +42,17 @@ public class GameplayClient implements NotificationHandler {
 
     private void handleLoadGame(LoadGameMessage message) {
         this.currentGame = message.getGame();
-        System.out.println(); // Blank line before board
+        System.out.println();
         redrawBoard();
-        System.out.print("[GAMEPLAY] >>> "); // Reprint prompt
-        System.out.flush();
     }
-
     private void handleError(ErrorMessage message) {
         System.out.println("Error: " + message.getErrorMessage());
     }
 
     private void handleNotification(NotificationMessage message) {
-        System.out.println("\n" + message.getMessage()); // Newline before notification
-        System.out.print("[GAMEPLAY] >>> "); // Reprint prompt
-        System.out.flush();
+        System.out.println(message.getMessage()); // Just the message
     }
+
 
     private void redrawBoard() {
         if (playerColor == ChessGame.TeamColor.BLACK) {
