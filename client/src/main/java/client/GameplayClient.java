@@ -119,7 +119,7 @@ Available commands:
         ChessMove move = new ChessMove(start, end, null);
         ws.makeMove(authToken, gameID, move);
 
-        return "Move sent.";
+        return null;
     }
 
     private String resign() throws Exception {

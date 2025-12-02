@@ -190,28 +190,27 @@ public class PostloginClient {
         java.util.Scanner scanner = new java.util.Scanner(System.in);
 
         while (true) {
-            // Don't print the prompt here for server-driven commands.
-            // The prompt should already be on the screen from GameplayClient.
             String line = scanner.nextLine();
 
             String result = gameplay.eval(line);
-            if (!result.isEmpty() && !result.equals("LEFT")) {
-                System.out.println(result); // e.g. "Move sent.", help text, etc.
+
+            // Only print if result is not null and not LEFT
+            if (result != null && !result.isEmpty() && !result.equals("LEFT")) {
+                System.out.println(result);
             }
 
-            if (result.equals("LEFT")) {
-                break; // Exit gameplay mode
+            if ("LEFT".equals(result)) {
+                break;
             }
 
-            // Figure out the command word (first token)
             String trimmed = line.trim();
             String cmd = trimmed.isEmpty() ? "" : trimmed.split("\\s+")[0];
 
-            // For LOCAL-ONLY commands (no server message), we must print the prompt ourselves
+            // For LOCAL-ONLY commands, print the prompt ourselves
             if (cmd.equals("help") || cmd.equals("redraw") || cmd.equals("highlight")) {
                 System.out.print("[GAMEPLAY] >>> ");
             }
-            // For move/resign/etc, the prompt will come from GameplayClient handlers
+            // For move/resign/leave, the prompt comes from WebSocket handlers
         }
     }
 
