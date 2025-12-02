@@ -59,9 +59,9 @@ public class GameplayClient implements NotificationHandler {
 
     private void redrawBoard() {
         if (playerColor == ChessGame.TeamColor.BLACK) {
-            BoardDrawer.drawBlackBoard(currentGame);
+            BoardDrawer.drawBlackBoard(currentGame, null, null);
         } else {
-            BoardDrawer.drawWhiteBoard(currentGame);
+            BoardDrawer.drawWhiteBoard(currentGame, null, null);
         }
     }
 
@@ -143,11 +143,16 @@ Available commands:
             return "No legal moves for that piece.";
         }
 
-        StringBuilder result = new StringBuilder("Legal moves: ");
-        for (var move : validMoves) {
-            result.append(positionToString(move.getEndPosition())).append(" ");
+        // Draw the board with highlights
+        System.out.println();
+        if (playerColor == ChessGame.TeamColor.BLACK) {
+            BoardDrawer.drawBlackBoard(currentGame, pos, validMoves);
+        } else {
+            BoardDrawer.drawWhiteBoard(currentGame, pos, validMoves);
         }
-        return result.toString();
+
+        return ""; // Return empty string since we already drew the board
+
     }
 
     // Helper: Parse "e2" -> ChessPosition(2, 5)

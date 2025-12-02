@@ -202,9 +202,8 @@ public class Server {
     public Server() {
         javalin = Javalin.create(config -> {
             config.staticFiles.add("web");
-            // Configure WebSocket timeout
-            config.jetty.modifyServletContextHandler(handler -> {
-                handler.getServer().setStopTimeout(0);
+            config.jetty.modifyServer(server -> {
+                server.setStopTimeout(0);
             });
         });
 
