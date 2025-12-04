@@ -2,6 +2,7 @@ package client;
 
 import chess.ChessGame;
 import chess.ChessMove;
+import chess.ChessPiece;
 import chess.ChessPosition;
 import client.websocket.NotificationHandler;
 import client.websocket.WebSocketFacade;
@@ -48,7 +49,8 @@ public class GameplayClient implements NotificationHandler {
     }
 
     private void handleError(ErrorMessage message) {
-        System.out.println("Error: " + message.getErrorMessage());
+        // FIX #1: Remove "Error: " prefix since server message already includes it
+        System.out.println(message.getErrorMessage());
         System.out.print("[GAMEPLAY] >>> ");   // prompt after error
     }
 
@@ -92,7 +94,7 @@ Available commands:
   help - Show this help message
   redraw - Redraw the chess board
   leave - Leave the game
-  move <from> <to> - Make a move (e.g., move e2 e4)
+  move <from> <to> [promotion] - Make a move (e.g., move e2 e4, move e7 e8 q)
   resign - Resign from the game
   highlight <position> - Show legal moves for a piece (e.g., highlight e2)
 """;
@@ -105,7 +107,7 @@ Available commands:
 
     private String makeMove(String[] params) throws Exception {
         if (params.length < 2) {
-            return "Error: move requires <from> <to>";
+            return "Error: move requires <from> <to> [promotion]";
         }
 
         // Parse positions (e.g., "e2" -> ChessPosition)
@@ -116,16 +118,33 @@ Available commands:
             return "Error: Invalid position format. Use format like 'e2'";
         }
 
-        ChessMove move = new ChessMove(start, end, null);
+        // FIX #2: Handle promotion piece if provided
+        ChessPiece.PieceType promotionPiece = null;
+        if (params.length >= 3) {
+            promotionPiece = parsePromotionPiece(params[2]);
+            if (promotionPiece == null) {
+                return "Error: Invalid promotion piece. Use q, r, b, or n";
+            }
+        }
+
+        ChessMove move = new ChessMove(start, end, promotionPiece);
         ws.makeMove(authToken, gameID, move);
 
         return null;
     }
 
     private String resign() throws Exception {
-        // Just resign for now; you can add a real confirmation in PostloginClient later
-        ws.resign(authToken, gameID);
-        return "Resigned from game.";
+        // FIX #3: Add confirmation prompt before resigning
+        System.out.print("Are you sure you want to resign? (yes/no): ");
+        java.util.Scanner scanner = new java.util.Scanner(System.in);
+        String response = scanner.nextLine().trim().toLowerCase();
+
+        if (response.equals("yes") || response.equals("y")) {
+            ws.resign(authToken, gameID);
+            return "Resigned from game.";
+        } else {
+            return "Resign cancelled.";
+        }
     }
 
     private String highlightMoves(String[] params) {
@@ -172,6 +191,17 @@ Available commands:
         int rowNum = row - '0';
 
         return new ChessPosition(rowNum, colNum);
+    }
+
+    // Helper: Parse promotion piece letter to PieceType
+    private ChessPiece.PieceType parsePromotionPiece(String piece) {
+        return switch (piece.toLowerCase()) {
+            case "q", "queen" -> ChessPiece.PieceType.QUEEN;
+            case "r", "rook" -> ChessPiece.PieceType.ROOK;
+            case "b", "bishop" -> ChessPiece.PieceType.BISHOP;
+            case "n", "knight" -> ChessPiece.PieceType.KNIGHT;
+            default -> null;
+        };
     }
 
     // Helper: ChessPosition -> "e2"
